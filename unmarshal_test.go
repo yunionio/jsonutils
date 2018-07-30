@@ -3,6 +3,8 @@ package jsonutils
 import (
 	"testing"
 	"time"
+
+	"github.com/yunionio/pkg/tristate"
 )
 
 type TestStruct struct {
@@ -13,16 +15,18 @@ type TestStruct struct {
 	Json   JSONObject
 	Json2  JSONObject
 	Array  []string
+	Tri    tristate.TriState
 }
 
 func TestJSONDictUnmarshal(t *testing.T) {
 	var err error
-	ts := TestStruct{Name: "test", Age: 23, Gender: "Male", Status: "Enabled"}
+	ts := TestStruct{Name: "test", Age: 23, Gender: "Male", Status: "Enabled", Tri: tristate.True}
 	t.Logf("%s", Marshal(ts))
 	json := NewDict()
 	json.Add(NewString("name1"), "name")
 	json.Add(NewInt(19), "age")
 	json.Add(NewStringArray([]string{"1", "2", "3"}), "array")
+	json.Add(JSONFalse, "tri")
 	subDict := NewDict()
 	subDict.Add(NewString("value"), "key")
 	subDict.Add(NewString("value2"), "key2")
