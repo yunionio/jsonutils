@@ -1,6 +1,7 @@
 package jsonutils
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -29,5 +30,34 @@ func TestNewArray(t *testing.T) {
 	arr2, _ = ParseString("[]")
 	if arr.String() != arr2.String() {
 		t.Errorf("Fail %s != %s", arr, arr2)
+	}
+}
+
+func TestNewBool(t *testing.T) {
+	type args struct {
+		val bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want *JSONBool
+	}{
+		{
+			name: "New-bool-true",
+			args: args{true},
+			want: &JSONBool{data: true},
+		},
+		{
+			name: "New-bool-false",
+			args: args{false},
+			want: &JSONBool{data: false},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewBool(tt.args.val); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewBool() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
