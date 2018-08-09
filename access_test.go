@@ -61,3 +61,29 @@ func TestNewBool(t *testing.T) {
 		})
 	}
 }
+
+func TestJSONDictRemove(t *testing.T) {
+	jd := JSONDict{
+		data: map[string]JSONObject{
+			"Hello": NewString("world"),
+			"hello": NewString("world"),
+			"HELLO": NewString("world"),
+		},
+	}
+	var removed bool
+	if removed = jd.Remove("HEllo"); removed {
+		t.Fatalf("case sensitive remove, want false, got true")
+	}
+	if removed = jd.Remove("HELLO"); !removed {
+		t.Fatalf("case sensitive remove, want true, got false")
+	}
+	if removed = jd.Remove("HELLO"); removed {
+		t.Fatalf("case sensitive remove, want false, got true")
+	}
+	if removed = jd.RemoveIgnoreCase("hello"); !removed {
+		t.Fatalf("case insensitive remove, want true, got false")
+	}
+	if removed = jd.RemoveIgnoreCase("hello"); removed {
+		t.Fatalf("case insensitive false, want true, got true")
+	}
+}
