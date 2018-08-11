@@ -1,6 +1,6 @@
 package jsonutils
 
-// import "github.com/yunionio/pkg/gotypes"
+// import "yunion.io/x/pkg/gotypes"
 
 func (dict *JSONDict) Equals(json JSONObject) bool {
 	dict2, ok := json.(*JSONDict)

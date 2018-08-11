@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yunionio/pkg/tristate"
+	"yunion.io/x/pkg/tristate"
 )
 
 type TestStruct struct {
