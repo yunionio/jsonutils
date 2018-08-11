@@ -3,7 +3,7 @@ package jsonutils
 import (
 	"reflect"
 
-	"github.com/yunionio/pkg/gotypes"
+	"yunion.io/x/pkg/gotypes"
 )
 
 var (

@@ -10,7 +10,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/yunionio/pkg/gotypes"
+	"yunion.io/x/pkg/gotypes"
 )
 
 type JSONError struct {

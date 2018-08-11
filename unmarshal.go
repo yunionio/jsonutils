@@ -14,12 +14,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yunionio/log"
-	"github.com/yunionio/pkg/gotypes"
-	"github.com/yunionio/pkg/tristate"
-	"github.com/yunionio/pkg/util/reflectutils"
-	"github.com/yunionio/pkg/util/timeutils"
-	"github.com/yunionio/pkg/utils"
+	"yunion.io/x/log"
+	"yunion.io/x/pkg/gotypes"
+	"yunion.io/x/pkg/tristate"
+	"yunion.io/x/pkg/util/reflectutils"
+	"yunion.io/x/pkg/util/timeutils"
+	"yunion.io/x/pkg/utils"
 )
 
 func (this *JSONValue) Unmarshal(obj interface{}, keys ...string) error {

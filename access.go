@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yunionio/pkg/util/timeutils"
+	"yunion.io/x/pkg/util/timeutils"
 )
 
 type JSONPair struct {

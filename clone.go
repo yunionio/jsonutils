@@ -1,7 +1,7 @@
 package jsonutils
 
 import (
-	"github.com/yunionio/pkg/utils"
+	"yunion.io/x/pkg/utils"
 )
 
 func (this *JSONDict) Copy(excludes ...string) *JSONDict {
