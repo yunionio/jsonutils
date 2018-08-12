@@ -49,11 +49,16 @@ func TestJSONMarshal(t *testing.T) {
 		JsonDict   *JSONDict
 		EmptyJson  *JSONArray
 		EmptyJson2 JSONObject
+		Mail       string `json:"mail,omitempty"`
+		Ignore     int    `json:"-"`
 	}
 	jsonDict := NewDict()
 	jsonDict.Add(NewString("jsonValue"), "jsonKey")
 	testUser := testStruct{Name: "Test user", Age: 23, Gender: "Male", Birthday: time.Now(),
 		Position: Occupation{Name: "Director", Position: "Direction"},
-		password: "private info", Json: jsonDict, JsonDict: jsonDict}
+		password: "private info", Json: jsonDict, JsonDict: jsonDict,
+		Mail:   "test@yunion.io",
+		Ignore: 1,
+	}
 	t.Logf("%s", Marshal(testUser))
 }
