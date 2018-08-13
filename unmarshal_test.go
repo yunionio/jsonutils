@@ -1,6 +1,7 @@
 package jsonutils
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -96,5 +97,93 @@ func TestTime(t *testing.T) {
 		t.Errorf("unmarshal timestruct error %s", err)
 	} else {
 		t.Logf("unmarshal result %s", ts)
+	}
+}
+
+func TestMarshalPtr(t *testing.T) {
+	type SPtrs struct {
+		Bool   *bool
+		Int    *int
+		Float  *float64
+		String *string
+		Struct *struct{ Hmm int }
+		Array  *[9]int
+		Slice  *[]int
+		Map    *map[string]int
+	}
+	// marshal nils
+	ptrsNil := &SPtrs{}
+	jsonNil := Marshal(ptrsNil)
+	jsonStrNil := jsonNil.String()
+	if jsonStrNil != "{}" {
+		t.Errorf("Should omit nil values, got %s", jsonStrNil)
+	}
+
+	// parse null JSON values
+	jsonStrNil2 := `
+		{
+			bool:    null,
+			int:     null,
+			float:   null,
+			string:  null,
+			struct:  null,
+			array:   null,
+			slice:   null,
+			map:     null
+		}
+	`
+	jsonObjNil, err := ParseString(jsonStrNil2)
+	if err != nil {
+		t.Errorf("parse json string error: %v", err)
+	}
+	jsonDictNil := jsonObjNil.(*JSONDict)
+	if numFields := reflect.TypeOf(SPtrs{}).NumField(); jsonDictNil.Length() != numFields {
+		t.Errorf("num fields want %d, got %d", numFields, jsonDictNil.Length())
+	}
+
+	// make nonNil
+	vBool := true
+	vInt := 99
+	vFloat := 99.9
+	vString := "9999"
+	vStruct := struct{ Hmm int }{99999}
+	vArray := [9]int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	vSlice := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	vMap := map[string]int{"999999": 1234567}
+	ptrsNonNil := &SPtrs{
+		Bool:   &vBool,
+		Int:    &vInt,
+		Float:  &vFloat,
+		String: &vString,
+		Struct: &vStruct,
+		Array:  &vArray,
+		Slice:  &vSlice,
+		Map:    &vMap,
+	}
+	jsonStrNonNil := Marshal(ptrsNonNil).String()
+
+	// unmarshal nils to non nils should perform override, partial if the source is not FULL
+	jsonObjNil.Unmarshal(ptrsNonNil)
+	jsonObj2 := Marshal(ptrsNonNil)
+	jsonObj2Str := jsonObj2.String()
+	if jsonObj2Str != "{}" {
+		t.Errorf("unmarshal result should be {}, got %s", jsonObj2Str)
+	}
+
+	// unmarshal non nil str will restore correctly
+	{
+		jsonObj, err := ParseString(jsonStrNonNil)
+		if err != nil {
+			t.Errorf("parse error: %s", err)
+		}
+		ptrs := &SPtrs{}
+		err = jsonObj.Unmarshal(ptrs)
+		if err != nil {
+			t.Errorf("unmarshal error: %s", err)
+		}
+		jsonStrAgain := Marshal(ptrs).String()
+		if jsonStrAgain != jsonStrNonNil {
+			t.Errorf("reverse failed: want %s, got %s", jsonStrNonNil, jsonStrAgain)
+		}
 	}
 }
