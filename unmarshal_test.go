@@ -187,3 +187,61 @@ func TestMarshalPtr(t *testing.T) {
 		}
 	}
 }
+
+func TestUnmarshalNonNilPtr(t *testing.T) {
+	t.Run("non-nil short-cap slice", func(t *testing.T) {
+		s := `[43]`
+		j, _ := ParseString(s)
+		v := []int{}
+		vp := &v
+		err := j.Unmarshal(&vp)
+		if err != nil {
+			t.Errorf("expect no error, got %s", err)
+			return
+		}
+		if len(v) != 1 {
+			t.Errorf("expect length 0, got %d", len(v))
+			return
+		}
+		if v[0] != 43 {
+			t.Errorf("expect [43], got %#v", v)
+			return
+		}
+	})
+	t.Run("non-nil over-cap slice", func(t *testing.T) {
+		s := `[43]`
+		j, _ := ParseString(s)
+		v := []int{1, 2}
+		vp := &v
+		err := j.Unmarshal(&vp)
+		if err != nil {
+			t.Errorf("expect no error, got %s", err)
+			return
+		}
+		if len(v) != 1 {
+			t.Errorf("expect length 0, got %d", len(v))
+			return
+		}
+		if v[0] != 43 {
+			t.Errorf("expect [43], got %#v", v)
+			return
+		}
+	})
+	t.Run("non-nil map", func(t *testing.T) {
+		s := `{"a": "b"}`
+		j, _ := ParseString(s)
+		v := struct {
+			A string
+		}{}
+		vp := &v
+		err := j.Unmarshal(&vp)
+		if err != nil {
+			t.Errorf("expect no error, got %s", err)
+			return
+		}
+		if v.A != "b" {
+			t.Errorf("expect v.A == \"b\", got %#v", v)
+			return
+		}
+	})
+}
