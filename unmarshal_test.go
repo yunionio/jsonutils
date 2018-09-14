@@ -11,6 +11,7 @@ import (
 type TestStruct struct {
 	Name   string
 	Age    int
+	Grade  uint8
 	Gender string
 	Status string
 	Json   JSONObject
@@ -21,11 +22,12 @@ type TestStruct struct {
 
 func TestJSONDictUnmarshal(t *testing.T) {
 	var err error
-	ts := TestStruct{Name: "test", Age: 23, Gender: "Male", Status: "Enabled", Tri: tristate.True}
+	ts := TestStruct{Name: "test", Age: 23, Grade: 2, Gender: "Male", Status: "Enabled", Tri: tristate.True}
 	t.Logf("%s", Marshal(ts))
 	json := NewDict()
 	json.Add(NewString("name1"), "name")
 	json.Add(NewInt(19), "age")
+	json.Add(NewInt(3), "grade")
 	json.Add(NewStringArray([]string{"1", "2", "3"}), "array")
 	json.Add(JSONFalse, "tri")
 	subDict := NewDict()
