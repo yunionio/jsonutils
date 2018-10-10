@@ -192,8 +192,11 @@ func (this *JSONDict) yamlLines() []string {
 	var ret = make([]string, 0)
 	for _, key := range this.SortedKeys() {
 		val := this.data[key]
+		if val.IsZero() {
+			continue
+		}
 		lines := val.yamlLines()
-		if len(lines) == 1 {
+		if ! val.isCompond() && len(lines) == 1 {
 			ret = append(ret, fmt.Sprintf("%s: %s", key, lines[0]))
 		} else {
 			switch val.(type) {
