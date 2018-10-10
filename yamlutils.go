@@ -61,43 +61,49 @@ func parseYAMLDict(lines []string) (map[string]JSONObject, error) {
 		} else {
 			key := lines[i][0:keypos]
 			val := strings.Trim(lines[i][keypos+1:], " ")
+			
 			if len(val) > 0 && val != "|" {
-				o, e := Parse([]byte(val))
-				if e != nil {
-					return dict, e
-				} else {
-					dict[key] = o
-				}
+				dict[key] = NewString(val)
 				i++
 			} else {
+				sublines := make([]string, 0)
 				j := i + 1
 				for j < len(lines) && len(strings.Trim(lines[j], " ")) == 0 {
+					sublines = append(sublines, "")
 					j++
 				}
-				if j >= len(lines) || lines[j][0] != ' ' {
-					return dict, fmt.Errorf("Illformat")
-				}
-				indent := 0
-				for indent < len(lines[j]) && lines[j][indent] == ' ' {
-					indent++
-				}
-				sublines := make([]string, 0)
-				for j < len(lines) {
-					if indent >= len(lines[j]) && len(strings.Trim(lines[j], " ")) == 0 {
-						j++
-					} else if indent < len(lines[j]) && len(strings.Trim(lines[j][:indent], " ")) == 0 {
-						sublines = append(sublines, lines[j][indent:])
-						j++
-					} else {
-						break
+				if j < len(lines) {
+					if lines[j][0] != ' ' {
+						return dict, fmt.Errorf("Illformat")
+					}
+
+					indent := 0
+					for indent < len(lines[j]) && lines[j][indent] == ' ' {
+						indent++
+					}
+
+					for j < len(lines) {
+						if indent >= len(lines[j]) && len(strings.Trim(lines[j], " ")) == 0 {
+							sublines = append(sublines, "")
+							j++
+						} else if indent < len(lines[j]) && len(strings.Trim(lines[j][:indent], " ")) == 0 {
+							sublines = append(sublines, lines[j][indent:])
+							j++
+						} else {
+							break
+						}
 					}
 				}
-				o, e := parseYAMLLines(sublines)
-				if e != nil {
-					return dict, e
+				if val == "|" {
+					dict[key] = NewString(strings.Join(sublines, "\n"))
 				} else {
+					o, e := parseYAMLLines(sublines)
+					if e != nil {
+						return dict, e
+					}
 					dict[key] = o
 				}
+
 				i = j
 			}
 		}
