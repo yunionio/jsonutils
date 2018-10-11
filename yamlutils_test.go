@@ -20,3 +20,73 @@ func TestIndentLines(t *testing.T) {
 		}
 	}
 }
+
+func TestYaml(t *testing.T) {
+	type SUser struct {
+		Name string
+		Passwd string
+		Keys []string
+	}
+	type SFile struct {
+		Path string
+		Content string
+	}
+	type SCallback struct {
+		Url string
+	}
+	type Config struct {
+		Users []SUser
+		WriteFiles []SFile
+		Callback *SCallback
+		Runcmd []string
+		Bootcmd []string
+		Packages []string
+	}
+	conf := Config{
+		Users: []SUser {
+			{
+				Name: "root",
+				Keys: []string {
+					"ssh-rsa AAAAA",
+				},
+			},
+			{
+				Name: "yunion",
+				Passwd: "123456",
+			},
+		},
+		WriteFiles: []SFile {
+			{
+				Content: "#\n\n127.0.0.1\tlocalhost\n10.0.0.1\t212222\n\n",
+				Path: "/etc/hosts",
+			},
+			{
+				Content: "gobuild",
+				Path: "/etc/ansible/hosts",
+			},
+		},
+		Callback: &SCallback{
+			Url: "https://www.yunion.io/$INSTANCE_ID",
+		},
+		Runcmd: []string {
+			"mkdir -p /var/run/httpd",
+		},
+	}
+	jsonConf := Marshal(&conf)
+	yaml := jsonConf.YAMLString()
+
+	t.Logf("\n%s", yaml)
+
+	jsonConf2, err := ParseYAML(yaml)
+	if err != nil {
+		t.Errorf("%s", err)
+	} else {
+		yaml2 := jsonConf2.YAMLString()
+		t.Logf("\n%s", yaml2)
+
+		if yaml != yaml2 {
+			t.Errorf("yaml != yaml2")
+		}
+	}
+
+}
