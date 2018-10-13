@@ -205,7 +205,7 @@ func (this *JSONDict) yamlLines() []string {
 			}
 		}
 		lines := val.yamlLines()
-		if ! val.isCompond() && len(lines) == 1 {
+		if !val.isCompond() && len(lines) == 1 {
 			ret = append(ret, fmt.Sprintf("%s: %s", key, lines[0]))
 		} else {
 			switch val.(type) {
