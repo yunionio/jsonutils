@@ -200,7 +200,7 @@ func (this *JSONDict) yamlLines() []string {
 		val := this.data[key]
 		if val.IsZero() {
 			switch val.(type) {
-			case *JSONString, *JSONDict, *JSONArray:
+			case *JSONString, *JSONDict, *JSONArray, *JSONValue:
 				continue
 			}
 		}
