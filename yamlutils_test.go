@@ -23,52 +23,57 @@ func TestIndentLines(t *testing.T) {
 
 func TestYaml(t *testing.T) {
 	type SUser struct {
-		Name string
-		Passwd string
-		Keys []string
+		Name         string
+		Passwd       string
+		Keys         []string
+		LockPassword bool
+		FloatValue   float32
 	}
 	type SFile struct {
-		Path string
+		Path    string
 		Content string
 	}
 	type SCallback struct {
 		Url string
 	}
 	type Config struct {
-		Users []SUser
-		WriteFiles []SFile
-		Callback *SCallback
-		Runcmd []string
-		Bootcmd []string
-		Packages []string
+		Users       []SUser
+		WriteFiles  []SFile
+		Callback    *SCallback
+		Runcmd      []string
+		Bootcmd     []string
+		Packages    []string
+		DisableRoot int
+		SshPwauth   int
 	}
 	conf := Config{
-		Users: []SUser {
+		Users: []SUser{
 			{
 				Name: "root",
-				Keys: []string {
+				Keys: []string{
 					"ssh-rsa AAAAA",
 				},
 			},
 			{
-				Name: "yunion",
-				Passwd: "123456",
+				Name:         "yunion",
+				Passwd:       "123456",
+				LockPassword: true,
 			},
 		},
-		WriteFiles: []SFile {
+		WriteFiles: []SFile{
 			{
 				Content: "#\n\n127.0.0.1\tlocalhost\n10.0.0.1\t212222\n\n",
-				Path: "/etc/hosts",
+				Path:    "/etc/hosts",
 			},
 			{
 				Content: "gobuild",
-				Path: "/etc/ansible/hosts",
+				Path:    "/etc/ansible/hosts",
 			},
 		},
 		Callback: &SCallback{
 			Url: "https://www.yunion.io/$INSTANCE_ID",
 		},
-		Runcmd: []string {
+		Runcmd: []string{
 			"mkdir -p /var/run/httpd",
 		},
 	}
