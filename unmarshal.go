@@ -348,6 +348,7 @@ func (this *JSONArray) unmarshalValue(val reflect.Value) error {
 		if this.data != nil {
 			array.Add(this.data...)
 		}
+		val.Set(reflect.ValueOf(array))
 		return nil
 	case JSONArrayPtrType, JSONObjectType:
 		val.Set(reflect.ValueOf(this))
