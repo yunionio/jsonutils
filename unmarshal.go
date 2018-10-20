@@ -321,7 +321,7 @@ func (this *JSONString) unmarshalValue(val reflect.Value) error {
 		}
 		val.SetInt(intVal)
 	case reflect.Float32, reflect.Float64:
-		floatVal, err := strconv.ParseFloat(this.data, 64)
+		floatVal, err := strconv.ParseFloat(normalizeCurrencyString(this.data), 64)
 		if err != nil {
 			return err
 		}
