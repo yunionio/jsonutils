@@ -248,6 +248,21 @@ func TestUnmarshalNonNilPtr(t *testing.T) {
 	})
 }
 
+func TestJSONArrayUnmarshal(t *testing.T) {
+	s := `[{"conf":{"cachedbadbbu":false,"conf":"none","count":0,"direct":false,"ra":false,"range":[],"size":[],"strip":0,"type":"hybrid","wt":false},"disks":[{"adapter":0,"driver":"Linux","enclousure":0,"index":0,"max_strip_size":0,"min_strip_size":0,"rotate":true,"size":100000,"slot":0}],"size":100000}]`
+	jsonArr, err := ParseString(s)
+	if err != nil {
+		t.Errorf("parse json error")
+	}
+
+	dest := JSONArray{}
+	jsonArr.Unmarshal(&dest)
+	t.Logf("%s", dest)
+	if Marshal(dest).String() != s {
+		t.Errorf("TestJSONArrayUnmarshal errors")
+	}
+}
+
 func TestUnmarshalCurrency(t *testing.T) {
 	type SAccountBalance struct {
 		USBalance     float64
