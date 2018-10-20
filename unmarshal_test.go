@@ -262,3 +262,22 @@ func TestJSONArrayUnmarshal(t *testing.T) {
 		t.Errorf("TestJSONArrayUnmarshal errors")
 	}
 }
+
+func TestUnmarshalCurrency(t *testing.T) {
+	type SAccountBalance struct {
+		USBalance     float64
+		GermanBalance float32
+	}
+	jsonStr := `{"us_balance":"3,118.54", "german_balance":"3.490.000,89"}`
+	json, err := ParseString(jsonStr)
+	if err != nil {
+		t.Errorf("parse %s error %s", jsonStr, err)
+		return
+	}
+	balance := &SAccountBalance{}
+	err = json.Unmarshal(&balance)
+	if err != nil {
+		t.Errorf("unmarshal %s fail %s", jsonStr, err)
+		return
+	}
+}
