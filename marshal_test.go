@@ -62,3 +62,28 @@ func TestJSONMarshal(t *testing.T) {
 	}
 	t.Logf("%s", Marshal(testUser))
 }
+
+func TestJSONMarshalTag(t *testing.T) {
+	type testStruct struct {
+		Number int    `json:",omitempty"`
+		Ignore string `json:"-"`
+		Name   string `json:",allowempty"`
+	}
+	test := testStruct{}
+	test.Ignore = "TETS"
+	t.Logf("%s", Marshal(test))
+
+	test.Number = 2
+	t.Logf("%s", Marshal(test))
+
+	type testStruct2 struct {
+		Number int `json:",allowempty,string"`
+		Ignore string
+		Name   string
+		Gender *JSONString
+	}
+
+	test2 := testStruct2{}
+	test2.Gender = NewString("male")
+	t.Logf("%s", Marshal(test2))
+}
