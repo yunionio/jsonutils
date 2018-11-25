@@ -73,6 +73,8 @@ func marshalStruct(val reflect.Value, info *jsonMarshalInfo) JSONObject {
 type jsonMarshalInfo struct {
 	ignore      bool
 	omitEmpty   bool
+	omitFalse   bool
+	omitZero    bool
 	name        string
 	forceString bool
 }
@@ -80,6 +82,8 @@ type jsonMarshalInfo struct {
 func parseJsonMarshalInfo(fieldTag reflect.StructTag) jsonMarshalInfo {
 	info := jsonMarshalInfo{}
 	info.omitEmpty = true
+	info.omitZero = false
+	info.omitFalse = false
 
 	tags := utils.TagMap(fieldTag)
 	if val, ok := tags["json"]; ok {
@@ -100,10 +104,18 @@ func parseJsonMarshalInfo(fieldTag reflect.StructTag) jsonMarshalInfo {
 				switch k {
 				case "omitempty":
 					info.omitEmpty = true
-				case "string":
-					info.forceString = true
 				case "allowempty":
 					info.omitEmpty = false
+				case "omitzero":
+					info.omitZero = true
+				case "allowzero":
+					info.omitZero = false
+				case "omitfalse":
+					info.omitFalse = true
+				case "allowfalse":
+					info.omitFalse = false
+				case "string":
+					info.forceString = true
 				}
 			}
 		}
@@ -146,7 +158,7 @@ func struct2JSONPairs(val reflect.Value) []JSONPair {
 }
 
 func marshalInt64(val int64, info *jsonMarshalInfo) JSONObject {
-	if val == 0 && info != nil && info.omitEmpty {
+	if val == 0 && info != nil && info.omitZero {
 		return JSONNull
 	} else if info != nil && info.forceString {
 		return NewString(fmt.Sprintf("%d", val))
@@ -156,7 +168,7 @@ func marshalInt64(val int64, info *jsonMarshalInfo) JSONObject {
 }
 
 func marshalFloat64(val float64, info *jsonMarshalInfo) JSONObject {
-	if val == 0.0 && info != nil && info.omitEmpty {
+	if val == 0.0 && info != nil && info.omitZero {
 		return JSONNull
 	} else if info != nil && info.forceString {
 		return NewString(fmt.Sprintf("%f", val))
@@ -166,7 +178,7 @@ func marshalFloat64(val float64, info *jsonMarshalInfo) JSONObject {
 }
 
 func marshalBoolean(val bool, info *jsonMarshalInfo) JSONObject {
-	if !val && info != nil && info.omitEmpty {
+	if !val && info != nil && info.omitFalse {
 		return JSONNull
 	} else if info != nil && info.forceString {
 		return NewString(fmt.Sprintf("%v", val))
