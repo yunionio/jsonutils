@@ -97,9 +97,22 @@ func TestTokenCredential(t *testing.T) {
 	realToken := mcclient.SSimpleToken{
 		User: "jackey",
 		UserId: "jackey123456",
+		Project: "system",
+		ProjectId: "system_id",
 	}
 
 	valToken := SEmbededCredential{&realToken}
 
-	t.Logf("%s", Marshal(&valToken))
+	jsonVal := Marshal(&valToken)
+
+	t.Logf("%s", jsonVal)
+
+	valToken1 := SEmbededCredential{}
+
+	err := jsonVal.Unmarshal(&valToken1)
+
+	if err != nil {
+		t.Errorf("unmarshal fail %s", err)
+	}
+
 }

@@ -142,16 +142,12 @@ func struct2JSONPairs(val reflect.Value) []JSONPair {
 			case reflect.Interface: // embbed interface
 			CHECKINTERFACE:
 				for {
-					log.Debugf("%s %#v %#v", nextVal.Type(), nextVal.Type().Kind(), reflect.Struct)
 					switch nextVal.Type().Kind() {
 					case reflect.Interface:
-						log.Debugf("anonymous interface, do elem...")
 						nextVal = nextVal.Elem()
 					case reflect.Ptr:
-						log.Debugf("pointer interface, do indirect...")
 						nextVal = reflect.Indirect(nextVal)
 					case reflect.Struct:
-						log.Debugf("anonuymous struct, break ...")
 						break CHECKINTERFACE
 					default:
 						log.Warningf("embeded interface point to a non struct data %s", nextVal.Type())
@@ -162,7 +158,6 @@ func struct2JSONPairs(val reflect.Value) []JSONPair {
 				log.Warningf("unsupport anonymous embeded type %s", fieldType.Type.Name())
 				continue
 			}
-			log.Debugf("%#v", nextVal)
 			newPairs := struct2JSONPairs(nextVal)
 			objPairs = append(objPairs, newPairs...)
 		} else {
