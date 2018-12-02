@@ -22,7 +22,7 @@ import (
 
 func marshalSlice(val reflect.Value, info *jsonMarshalInfo) JSONObject {
 	if val.Len() == 0 && info != nil && info.omitEmpty {
-		return nil
+		return JSONNull
 	}
 	objs := make([]JSONObject, val.Len())
 	for i := 0; i < val.Len(); i += 1 {
@@ -39,7 +39,7 @@ func marshalSlice(val reflect.Value, info *jsonMarshalInfo) JSONObject {
 func marshalMap(val reflect.Value, info *jsonMarshalInfo) JSONObject {
 	keys := val.MapKeys()
 	if len(keys) == 0 && info != nil && info.omitEmpty {
-		return nil
+		return JSONNull
 	}
 	objPairs := make([]JSONPair, 0)
 	for i := 0; i < len(keys); i += 1 {
@@ -60,7 +60,7 @@ func marshalMap(val reflect.Value, info *jsonMarshalInfo) JSONObject {
 func marshalStruct(val reflect.Value, info *jsonMarshalInfo) JSONObject {
 	objPairs := struct2JSONPairs(val)
 	if len(objPairs) == 0 && info != nil && info.omitEmpty {
-		return nil
+		return JSONNull
 	}
 	dict := NewDict(objPairs...)
 	if info != nil && info.forceString {
@@ -73,6 +73,8 @@ func marshalStruct(val reflect.Value, info *jsonMarshalInfo) JSONObject {
 type jsonMarshalInfo struct {
 	ignore      bool
 	omitEmpty   bool
+	omitFalse   bool
+	omitZero    bool
 	name        string
 	forceString bool
 }
@@ -80,6 +82,8 @@ type jsonMarshalInfo struct {
 func parseJsonMarshalInfo(fieldTag reflect.StructTag) jsonMarshalInfo {
 	info := jsonMarshalInfo{}
 	info.omitEmpty = true
+	info.omitZero = false
+	info.omitFalse = false
 
 	tags := utils.TagMap(fieldTag)
 	if val, ok := tags["json"]; ok {
@@ -100,10 +104,18 @@ func parseJsonMarshalInfo(fieldTag reflect.StructTag) jsonMarshalInfo {
 				switch k {
 				case "omitempty":
 					info.omitEmpty = true
-				case "string":
-					info.forceString = true
 				case "allowempty":
 					info.omitEmpty = false
+				case "omitzero":
+					info.omitZero = true
+				case "allowzero":
+					info.omitZero = false
+				case "omitfalse":
+					info.omitFalse = true
+				case "allowfalse":
+					info.omitFalse = false
+				case "string":
+					info.forceString = true
 				}
 			}
 		}
@@ -174,8 +186,8 @@ func struct2JSONPairs(val reflect.Value) []JSONPair {
 }
 
 func marshalInt64(val int64, info *jsonMarshalInfo) JSONObject {
-	if val == 0 && info != nil && info.omitEmpty {
-		return nil
+	if val == 0 && info != nil && info.omitZero {
+		return JSONNull
 	} else if info != nil && info.forceString {
 		return NewString(fmt.Sprintf("%d", val))
 	} else {
@@ -184,8 +196,8 @@ func marshalInt64(val int64, info *jsonMarshalInfo) JSONObject {
 }
 
 func marshalFloat64(val float64, info *jsonMarshalInfo) JSONObject {
-	if val == 0.0 && info != nil && info.omitEmpty {
-		return nil
+	if val == 0.0 && info != nil && info.omitZero {
+		return JSONNull
 	} else if info != nil && info.forceString {
 		return NewString(fmt.Sprintf("%f", val))
 	} else {
@@ -194,8 +206,8 @@ func marshalFloat64(val float64, info *jsonMarshalInfo) JSONObject {
 }
 
 func marshalBoolean(val bool, info *jsonMarshalInfo) JSONObject {
-	if !val && info != nil && info.omitEmpty {
-		return nil
+	if !val && info != nil && info.omitFalse {
+		return JSONNull
 	} else if info != nil && info.forceString {
 		return NewString(fmt.Sprintf("%v", val))
 	} else {
@@ -213,26 +225,22 @@ func marshalTristate(val tristate.TriState, info *jsonMarshalInfo) JSONObject {
 	} else if val.IsFalse() {
 		return JSONFalse
 	} else {
-		if info != nil && info.omitEmpty {
-			return nil
-		} else {
-			return JSONNull
-		}
+		return JSONNull
 	}
 }
 
 func marshalString(val string, info *jsonMarshalInfo) JSONObject {
 	if len(val) == 0 && info != nil && info.omitEmpty {
-		return nil
+		return JSONNull
 	} else {
 		return NewString(val)
 	}
 }
 
-func marshalTime(val time.Time, info *jsonMarshalInfo) *JSONString {
+func marshalTime(val time.Time, info *jsonMarshalInfo) JSONObject {
 	if val.IsZero() {
 		if info != nil && info.omitEmpty {
-			return nil
+			return JSONNull
 		}
 		return NewString("")
 	} else {
@@ -252,81 +260,81 @@ func marshalValue(objValue reflect.Value, info *jsonMarshalInfo) JSONObject {
 	switch objValue.Type() {
 	case JSONDictPtrType, JSONArrayPtrType, JSONBoolPtrType, JSONIntPtrType, JSONFloatPtrType, JSONStringPtrType, JSONObjectType:
 		if objValue.IsNil() {
-			return nil
+			return JSONNull
 		}
 		return objValue.Interface().(JSONObject)
 	case JSONDictType:
 		json, ok := objValue.Interface().(JSONDict)
 		if ok {
 			if len(json.data) == 0 && info != nil && info.omitEmpty {
-				return nil
+				return JSONNull
 			} else {
 				return &json
 			}
 		} else {
-			return nil
+			return JSONNull
 		}
 	case JSONArrayType:
 		json, ok := objValue.Interface().(JSONArray)
 		if ok {
 			if len(json.data) == 0 && info != nil && info.omitEmpty {
-				return nil
+				return JSONNull
 			} else {
 				return &json
 			}
 		} else {
-			return nil
+			return JSONNull
 		}
 	case JSONBoolType:
 		json, ok := objValue.Interface().(JSONBool)
 		if ok {
 			if !json.data && info != nil && info.omitEmpty {
-				return nil
+				return JSONNull
 			} else {
 				return &json
 			}
 		} else {
-			return nil
+			return JSONNull
 		}
 	case JSONIntType:
 		json, ok := objValue.Interface().(JSONInt)
 		if ok {
 			if json.data == 0 && info != nil && info.omitEmpty {
-				return nil
+				return JSONNull
 			} else {
 				return &json
 			}
 		} else {
-			return nil
+			return JSONNull
 		}
 	case JSONFloatType:
 		json, ok := objValue.Interface().(JSONFloat)
 		if ok {
 			if json.data == 0.0 && info != nil && info.omitEmpty {
-				return nil
+				return JSONNull
 			} else {
 				return &json
 			}
 		} else {
-			return nil
+			return JSONNull
 		}
 	case JSONStringType:
 		json, ok := objValue.Interface().(JSONString)
 		if ok {
 			if len(json.data) == 0 && info != nil && info.omitEmpty {
-				return nil
+				return JSONNull
 			} else {
 				return &json
 			}
 		} else {
-			return nil
+			return JSONNull
 		}
 	case tristate.TriStateType:
 		tri, ok := objValue.Interface().(tristate.TriState)
 		if ok {
 			return marshalTristate(tri, info)
 		} else {
-			return nil
+			return JSONNull
 		}
 	}
 	switch objValue.Kind() {
@@ -354,7 +362,7 @@ func marshalValue(objValue reflect.Value, info *jsonMarshalInfo) JSONObject {
 		return marshalFloat64(floatValue.Interface().(float64), info)
 	case reflect.Interface, reflect.Ptr:
 		if objValue.IsNil() {
-			return nil
+			return JSONNull
 		}
 		return marshalValue(objValue.Elem(), info)
 	default:
