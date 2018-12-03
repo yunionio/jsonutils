@@ -3,7 +3,6 @@ package jsonutils
 import (
 	"testing"
 	"time"
-	"yunion.io/x/onecloud/pkg/mcclient"
 )
 
 func TestJSONMarshal(t *testing.T) {
@@ -87,32 +86,4 @@ func TestJSONMarshalTag(t *testing.T) {
 	test2 := testStruct2{}
 	test2.Gender = NewString("male")
 	t.Logf("%s", Marshal(test2))
-}
-
-
-func TestTokenCredential(t *testing.T) {
-	type SEmbededCredential struct {
-		mcclient.TokenCredential
-	}
-	realToken := mcclient.SSimpleToken{
-		User: "jackey",
-		UserId: "jackey123456",
-		Project: "system",
-		ProjectId: "system_id",
-	}
-
-	valToken := SEmbededCredential{&realToken}
-
-	jsonVal := Marshal(&valToken)
-
-	t.Logf("%s", jsonVal)
-
-	valToken1 := SEmbededCredential{}
-
-	err := jsonVal.Unmarshal(&valToken1)
-
-	if err != nil {
-		t.Errorf("unmarshal fail %s", err)
-	}
-
 }
