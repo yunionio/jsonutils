@@ -5,6 +5,106 @@ import (
 	"time"
 )
 
+func TestMarshal(t *testing.T) {
+	t.Run("anonymous interface", func(t *testing.T) {
+		type I interface{}
+		type M struct {
+			N string
+		}
+		type S struct {
+			I
+		}
+		s := S{I: M{N: "hello"}}
+		want, _ := ParseString(`{"n": "hello"}`)
+		got := Marshal(s)
+		if !got.Equals(want) {
+			t.Errorf("got %s, want %s", got, want)
+		}
+	})
+	t.Run("anonymous struct", func(t *testing.T) {
+		type M struct {
+			N string
+		}
+		type S struct {
+			M
+		}
+		s := S{M{N: "hello"}}
+		want, _ := ParseString(`{"n": "hello"}`)
+		got := Marshal(s)
+		if !got.Equals(want) {
+			t.Errorf("got %s, want %s", got, want)
+		}
+	})
+	t.Run("anonymous struct ptr", func(t *testing.T) {
+		type M struct {
+			N string
+		}
+		type S struct {
+			*M
+		}
+		s := S{&M{N: "hello"}}
+		want, _ := ParseString(`{"n": "hello"}`)
+		got := Marshal(s)
+		if !got.Equals(want) {
+			t.Errorf("got %s, want %s", got, want)
+		}
+	})
+	t.Run("all", func(t *testing.T) {
+		type EmbedBasicString string
+		type EmbedStruct struct {
+			EmbedStructM string
+		}
+		type EmbedStructPtr struct {
+			EmbedStructPtrM string
+		}
+		type EmbedInterfaceStruct interface{}
+		type EmbedInterfaceBasic interface{}
+		type S struct {
+			BasicString    string
+			BasicStringPtr *string
+
+			string // ignored for field name being not exported
+			EmbedBasicString
+			EmbedStruct
+			*EmbedStructPtr
+			EmbedInterfaceStruct
+			EmbedInterfaceBasic
+		}
+		str := "BasicStringPtr"
+		s := S{
+			BasicString:    "BasicString",
+			BasicStringPtr: &str,
+
+			string:           "string",
+			EmbedBasicString: "EmbedBasicString",
+			EmbedStruct: EmbedStruct{
+				EmbedStructM: "EmbedStructM",
+			},
+			EmbedStructPtr: &EmbedStructPtr{
+				EmbedStructPtrM: "EmbedStructPtrM",
+			},
+			EmbedInterfaceStruct: EmbedInterfaceStruct(struct {
+				EmbedInterfaceStructM string
+			}{"EmbedInterfaceStructM"}),
+			EmbedInterfaceBasic: EmbedInterfaceBasic("EmbedInterfaceBasic"),
+		}
+		want, _ := ParseString(`{
+			"basic_string":"BasicString",
+			"basic_string_ptr":"BasicStringPtr",
+
+			"embed_basic_string":"EmbedBasicString",
+			"embed_struct_m":"EmbedStructM",
+			"embed_struct_ptr_m":"EmbedStructPtrM",
+			"embed_interface_struct_m":"EmbedInterfaceStructM",
+			"embed_interface_basic":"EmbedInterfaceBasic"
+		}`)
+		got := Marshal(s)
+		if !got.Equals(want) {
+			t.Errorf("got %s, want %s", got, want)
+		}
+	})
+}
+
 func TestJSONMarshal(t *testing.T) {
 	t.Logf("%s", Marshal("string"))
 	t.Logf("%s", Marshal(true))
