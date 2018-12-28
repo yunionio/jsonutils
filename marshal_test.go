@@ -165,25 +165,52 @@ func TestJSONMarshal(t *testing.T) {
 
 func TestJSONMarshalTag(t *testing.T) {
 	type testStruct struct {
-		Number int    `json:",omitempty"`
+		Number int    `json:",omitzero"`
 		Ignore string `json:"-"`
-		Name   string `json:",allowempty"`
+		Name   string `json:"OS:Name:Test,allowempty"`
 	}
 	test := testStruct{}
 	test.Ignore = "TETS"
-	t.Logf("%s", Marshal(test))
+	j1 := Marshal(test)
+	t.Logf("%s", j1)
+
+	if j1.Contains("number") {
+		t.Fatalf("omitzero field presents")
+	}
+	if !j1.Contains("OS:Name:Test") {
+		t.Fatalf("allowempty field should present")
+	}
 
 	test.Number = 2
-	t.Logf("%s", Marshal(test))
+	j2 := Marshal(test)
+	t.Logf("%s", j2)
+	if !j2.Contains("number") {
+		t.Fatalf("Non-zero omitzero field shoudl present")
+	}
+	if !j2.Contains("OS:Name:Test") {
+		t.Fatalf("allowempty field should present")
+	}
 
 	type testStruct2 struct {
-		Number int `json:",allowempty,string"`
-		Ignore string
-		Name   string
-		Gender *JSONString
+		Number      int `json:"Number,allowzero,string"`
+		EmptyNumber int `json:"EmptyNumber,omitzero"`
+		Ignore      string
+		Name        string
+		Gender      *JSONString
 	}
 
 	test2 := testStruct2{}
 	test2.Gender = NewString("male")
+	j := Marshal(test2)
 	t.Logf("%s", Marshal(test2))
+	if !j.Contains("Number") {
+		t.Fatalf("allowzero field should present")
+	}
+	numJson, _ := j.Get("Number")
+	if _, ok := numJson.(*JSONString); !ok {
+		t.Fatalf("forcestring field should be JSONString")
+	}
+	if j.Contains("EmptyNumber") {
+		t.Fatalf("omitzero field should not present")
+	}
 }

@@ -86,7 +86,7 @@ func TestJSONDict_Unmarshal(t *testing.T) {
 
 }
 
-func TestTime(t *testing.T) {
+func TestUnmarshalTime(t *testing.T) {
 	type TimeStruct struct {
 		EndTime time.Time
 	}
@@ -97,6 +97,8 @@ func TestTime(t *testing.T) {
 	err := jsonDict.Unmarshal(&ts)
 	if err != nil {
 		t.Errorf("unmarshal timestruct error %s", err)
+	} else if !ts.EndTime.IsZero() {
+		t.Fatalf("unmarshal empty time should zero")
 	} else {
 		t.Logf("unmarshal result %s", ts)
 	}
@@ -279,5 +281,36 @@ func TestUnmarshalCurrency(t *testing.T) {
 	if err != nil {
 		t.Errorf("unmarshal %s fail %s", jsonStr, err)
 		return
+	}
+	if balance.USBalance != float64(3118.54) {
+		t.Fatalf("unmarshal us balance fail")
+	}
+	if balance.GermanBalance != float32(3490000.89) {
+		t.Fatalf("unmarshal german balance fail!")
+	}
+}
+
+func TestUnmarshalJsonTags(t *testing.T) {
+	type SJsonTagStruct struct {
+		Name    string `json:"OS:Name,omitempty"`
+		Keyword string `json:"key_word,omitempty"`
+	}
+	cases := []struct {
+		in   string
+		want SJsonTagStruct
+	}{
+		{`{"name":"John","keyword":"json"}`, SJsonTagStruct{Name: "John", Keyword: "json"}},
+		{`{"OS:Name":"John1","key_word":"json2"}`, SJsonTagStruct{Name: "John1", Keyword: "json2"}},
+	}
+	for _, c := range cases {
+		json, _ := ParseString(c.in)
+		got := SJsonTagStruct{}
+		err := json.Unmarshal(&got)
+		if err != nil {
+			t.Fatalf("unmarshal %s fail: %s", json, err)
+		}
+		if c.want.Name != got.Name || c.want.Keyword != got.Keyword {
+			t.Fatalf("want %#v got %#v", c.want, got)
+		}
 	}
 }
