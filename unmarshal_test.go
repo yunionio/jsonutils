@@ -314,3 +314,35 @@ func TestUnmarshalJsonTags(t *testing.T) {
 		}
 	}
 }
+
+func TestUnmarshalEmbbedPtr(t *testing.T) {
+	type OneStruct struct {
+		Name string `json:"levelone:name"`
+	}
+	type TwoStruct struct {
+		*OneStruct
+		Gender string `json:"leveltwo:gender"`
+	}
+
+	cases := []struct {
+		in   string
+		want string
+	}{
+		{`{"levelone:name":"jack", "leveltwo:gender":"male"}`, "jack"},
+		{`{"leveltwo:gender":"male"}`, ""},
+	}
+	for _, c := range cases {
+		json, err := ParseString(c.in)
+		if err != nil {
+			t.Fatalf("fail to parse json %s %s", c.in, err)
+		}
+		got := TwoStruct{}
+		err = json.Unmarshal(&got)
+		if err != nil {
+			t.Fatalf("fail to unmarshal %s %s", json.String(), err)
+		}
+		if got.Name != c.want {
+			t.Fatalf("want %s got %s", c.want, got.Name)
+		}
+	}
+}
