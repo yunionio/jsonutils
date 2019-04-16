@@ -1,10 +1,12 @@
 package jsonutils
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
+	"yunion.io/x/pkg/gotypes"
 	"yunion.io/x/pkg/tristate"
 )
 
@@ -347,17 +349,61 @@ func TestUnmarshalEmbbedPtr(t *testing.T) {
 	}
 }
 
-func TestUnmarshalInterface(t *testing.T) {
-	metadata := NewDict()
-	metadata.Add(NewString("john"), "name")
-	metadata.Add(NewInt(12), "age")
-	metadata.Add(JSONTrue, "is_student")
-	metadata.Add(NewFloat(1.2), "weight")
+type TestUnmarshalInterfaceI interface {
+	String() string
+	IsZero() bool
+}
+type TestUnmarshalInterfaceSI struct {
+	Si int
+}
+type TestUnmarshalInterfaceS struct {
+	M TestUnmarshalInterfaceI
+}
 
-	meta := make(map[string]interface{}, 0)
-	err := metadata.Unmarshal(meta)
-	if err != nil {
-		t.Fatalf("Get VM Metadata error: %v", err)
-	}
-	t.Logf("%s", meta)
+func (si *TestUnmarshalInterfaceSI) IsZero() bool {
+	return si.Si == 0
+}
+
+func (si *TestUnmarshalInterfaceSI) String() string {
+	return fmt.Sprintf("%d", si.Si)
+}
+
+func TestUnmarshalInterface(t *testing.T) {
+	t.Run("as-map-val", func(t *testing.T) {
+		metadata := NewDict()
+		metadata.Add(NewString("john"), "name")
+		metadata.Add(NewInt(12), "age")
+		metadata.Add(JSONTrue, "is_student")
+		metadata.Add(NewFloat(1.2), "weight")
+
+		meta := make(map[string]interface{}, 0)
+		err := metadata.Unmarshal(meta)
+		if err != nil {
+			t.Fatalf("Get VM Metadata error: %v", err)
+		}
+	})
+
+	t.Run("as-member", func(t *testing.T) {
+		s := &TestUnmarshalInterfaceS{}
+		gotypes.RegisterSerializable(reflect.TypeOf((*TestUnmarshalInterfaceI)(nil)).Elem(), func() gotypes.ISerializable {
+			return &TestUnmarshalInterfaceSI{}
+		})
+		wantNum := 0xdeadbeef
+		jsonStr := fmt.Sprintf(`{"m": {"si": %d}}`, wantNum)
+		jo, err := ParseString(jsonStr)
+		if err != nil {
+			t.Fatalf("parse %q failed: %v", jsonStr, err)
+		}
+		err = jo.Unmarshal(s)
+		if err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		si, ok := s.M.(*TestUnmarshalInterfaceSI)
+		if !ok {
+			t.Fatalf("expecting type *TestUnmarshalInterfaceSI, got %#v", s.M)
+		}
+		if si.Si != wantNum {
+			t.Fatalf("want %x, got %x", wantNum, si.Si)
+		}
+	})
 }
