@@ -117,7 +117,7 @@ func GetAnyString(json JSONObject, keys []string) string {
 }
 
 func GetArrayOfPrefix(json JSONObject, prefix string) []JSONObject {
-	if json != nil {
+	if json == nil {
 		return nil
 	}
 
