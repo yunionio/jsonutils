@@ -28,7 +28,6 @@ import (
 	"strings"
 	"time"
 
-	"yunion.io/x/log"
 	"yunion.io/x/pkg/errors"
 	"yunion.io/x/pkg/gotypes"
 	"yunion.io/x/pkg/tristate"
@@ -467,8 +466,7 @@ func (this *JSONDict) unmarshalValue(val reflect.Value) error {
 			//
 			val.Set(reflect.ValueOf(objPtr).Convert(val.Type()))
 		} else {
-			log.Errorf("Do not known how to deserialize json into this interface type %s", val.Type())
-			return ErrInterfaceUnsupported
+			return errors.Wrapf(ErrInterfaceUnsupported, "JSONDict.unmarshalValue: %s", val.Type())
 		}
 	case reflect.Ptr:
 		kind := val.Type().Elem().Kind()
@@ -481,8 +479,7 @@ func (this *JSONDict) unmarshalValue(val reflect.Value) error {
 		}
 		fallthrough
 	default:
-		log.Errorf("JSONDict type mismatch: %s", val.Type())
-		return ErrTypeMismatch
+		return errors.Wrapf(ErrTypeMismatch, "JSONDict.unmarshalValue: %s", val.Type())
 	}
 	return nil
 }
@@ -503,8 +500,7 @@ func (this *JSONDict) unmarshalMap(val reflect.Value) error {
 
 		err := v.unmarshalValue(valVal)
 		if err != nil {
-			log.Debugf("unmarshalMap field %s error %s", k, err)
-			return errors.Wrap(err, "unmarshalValue")
+			return errors.Wrap(err, "JSONDict.unmarshalMap")
 		}
 		val.SetMapIndex(keyVal, valVal)
 	}
@@ -518,8 +514,7 @@ func (this *JSONDict) unmarshalStruct(val reflect.Value) error {
 		if find {
 			err := v.unmarshalValue(fieldValue)
 			if err != nil {
-				log.Debugf("unmarshalStruct field %s error %s", k, err)
-				return errors.Wrap(err, "unmarshalValue")
+				return errors.Wrap(err, "JSONDict.unmarshalStruct")
 			}
 		}
 	}
