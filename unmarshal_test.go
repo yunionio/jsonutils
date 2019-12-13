@@ -421,3 +421,17 @@ func TestUnmarshalInterface(t *testing.T) {
 		}
 	})
 }
+
+func TestUnmarshalString2Array(t *testing.T) {
+	type sStruct struct {
+		Provider []string `json:"provider"`
+	}
+	json := NewDict()
+	json.Add(NewString("Aliyun"), "provider")
+	s := sStruct{}
+	err := json.Unmarshal(&s)
+	if err != nil {
+		t.Errorf("TestUnmarshalString2Array fail %s", err)
+	}
+	t.Logf("%s", s)
+}
