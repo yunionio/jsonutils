@@ -22,6 +22,7 @@ Fill the value of JSONObject into any object
 */
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -56,7 +57,12 @@ func jsonUnmarshal(jo JSONObject, o interface{}, keys []string) error {
 			return errors.Wrap(err, "Get")
 		}
 	}
-	value := reflect.Indirect(reflect.ValueOf(o))
+	rv := reflect.ValueOf(o)
+	if rv.Kind() != reflect.Ptr || rv.IsNil() {
+		return &json.InvalidUnmarshalError{reflect.TypeOf(o)}
+	}
+
+	value := reflect.Indirect(rv)
 	return jo.unmarshalValue(value)
 }
 
