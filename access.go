@@ -302,6 +302,9 @@ func (this *JSONDict) GetArray(keys ...string) ([]JSONObject, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Get")
 	}
+	if _, ok := obj.(*JSONDict); ok {
+		return nil, ErrInvalidJsonArray
+	}
 	return obj.GetArray()
 	/* arr, ok := obj.(*JSONArray)
 	   if !ok {
