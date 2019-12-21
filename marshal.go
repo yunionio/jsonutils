@@ -92,7 +92,7 @@ func struct2JSONPairs(val reflect.Value) []JSONPair {
 			continue
 		}
 		key := jsonInfo.MarshalName()
-		val := marshalValue(fields[i].Value, jsonInfo)
+		val := marshalValue(fields[i].Value, &jsonInfo)
 		if val != nil && val != JSONNull {
 			objPair := JSONPair{key: key, val: val}
 			objPairs = append(objPairs, objPair)
