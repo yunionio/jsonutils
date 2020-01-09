@@ -435,3 +435,41 @@ func TestUnmarshalString2Array(t *testing.T) {
 	}
 	t.Logf("%s", s)
 }
+
+type ObsoleteStruct struct {
+	CloudEnv  string `json:"cloud_env"`
+	IsPublic  *bool  `json:"is_public"`
+	Project   string `json:"project"`
+	ProjectId string `json:"project_id" deprecated-by:"project"`
+	Tenant    string `json:"tenant" deprecated-by:"project_id"`
+	TenantId  string `json:"tenant_id" deprecated-by:"tenant"`
+	Loop1     string `json:"loop1" deprecated-by:"loop2"`
+	Loop2     string `json:"loop2" deprecated-by:"loop1"`
+}
+
+func (s *ObsoleteStruct) AfterUnmarshal() {
+	if s.CloudEnv == "" && s.IsPublic != nil {
+		if *s.IsPublic {
+			s.CloudEnv = "public"
+		} else {
+			s.CloudEnv = "private"
+		}
+	}
+}
+
+func TestObsoleteBy(t *testing.T) {
+	jsonVal := NewDict()
+	jsonVal.Add(JSONTrue, "is_public")
+	jsonVal.Add(NewString("testproject"), "tenant_id")
+	jsonVal.Add(NewString("loop"), "loop1")
+
+	s := ObsoleteStruct{}
+	err := jsonVal.Unmarshal(&s)
+	if err != nil {
+		t.Fatalf("fail to unmarshal %s", err)
+	}
+	t.Logf("%s", Marshal(s))
+	if s.CloudEnv != "public" || s.Project != "testproject" {
+		t.Errorf("obsoleteby not work!")
+	}
+}
