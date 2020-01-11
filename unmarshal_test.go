@@ -457,19 +457,68 @@ func (s *ObsoleteStruct) AfterUnmarshal() {
 	}
 }
 
+type ObsoleteStruct2 struct {
+	Hypervisors []string `json:"hypervisors"`
+	Baremetal   *bool    `json:"baremetal"`
+}
+
+func (s *ObsoleteStruct2) AfterUnmarshal() {
+	if s.Baremetal != nil && *s.Baremetal {
+		s.Hypervisors = append(s.Hypervisors, "baremetal")
+	}
+}
+
+type EmbedObsoleteStruct struct {
+	ObsoleteStruct
+	ObsoleteStruct2
+
+	Name string `json:"name"`
+}
+
+type EmbedObsoleteStruct2 struct {
+	*ObsoleteStruct
+	*ObsoleteStruct2
+
+	Name string `json:"name"`
+}
+
 func TestObsoleteBy(t *testing.T) {
 	jsonVal := NewDict()
 	jsonVal.Add(JSONTrue, "is_public")
 	jsonVal.Add(NewString("testproject"), "tenant_id")
 	jsonVal.Add(NewString("loop"), "loop1")
+	jsonVal.Add(JSONTrue, "baremetal")
 
+	t.Logf("origin: %s", jsonVal)
 	s := ObsoleteStruct{}
 	err := jsonVal.Unmarshal(&s)
 	if err != nil {
 		t.Fatalf("fail to unmarshal %s", err)
 	}
-	t.Logf("%s", Marshal(s))
+	t.Logf("s: %s", Marshal(s))
 	if s.CloudEnv != "public" || s.Project != "testproject" {
+		t.Errorf("obsoleteby not work!")
+	}
+
+	s1 := EmbedObsoleteStruct{}
+	err = jsonVal.Unmarshal(&s1)
+	if err != nil {
+		t.Fatalf("fail to unmarshal %s", err)
+	}
+	s1.Name = "s1"
+	t.Logf("s1: %s", Marshal(s1))
+	if s1.CloudEnv != "public" || s1.Project != "testproject" || len(s1.Hypervisors) == 0 || s1.Hypervisors[0] != "baremetal" {
+		t.Errorf("obsoleteby not work!")
+	}
+
+	s2 := EmbedObsoleteStruct2{}
+	err = jsonVal.Unmarshal(&s2)
+	if err != nil {
+		t.Fatalf("fail to unmarshal %s", err)
+	}
+	s2.Name = "s1"
+	t.Logf("s2: %s", Marshal(s1))
+	if s2.CloudEnv != "public" || s2.Project != "testproject" || len(s2.Hypervisors) == 0 || s2.Hypervisors[0] != "baremetal" {
 		t.Errorf("obsoleteby not work!")
 	}
 }
