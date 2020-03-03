@@ -522,3 +522,38 @@ func TestObsoleteBy(t *testing.T) {
 		t.Errorf("obsoleteby not work!")
 	}
 }
+
+func TestUnmarshalDuplicateEmbed(t *testing.T) {
+	type Embeded struct {
+		Provider string `json:"provider"`
+	}
+	type Struct1 struct {
+		Embeded
+		Cloudregion string `json:"cloudregion"`
+	}
+	type Struct2 struct {
+		Embeded
+		Cloudaccount string `json:"cloudaccount"`
+	}
+	type TopStruct struct {
+		Struct1
+		Struct2
+	}
+
+	json := NewDict()
+	json.Add(NewString("Aliyun"), "provider")
+	json.Add(NewString("region1"), "cloudregion")
+	json.Add(NewString("account1"), "cloudaccount")
+
+	s := TopStruct{}
+	err := json.Unmarshal(&s)
+	if err != nil {
+		t.Fatalf("unmarshal fail %s", err)
+	}
+
+	if s.Struct1.Provider != s.Struct2.Provider {
+		t.Fatalf("s.Struct1.Provier(%s) != s.Struct2.Provier(%s)", s.Struct1.Provider, s.Struct2.Provider)
+	}
+
+	t.Logf("%s", Marshal(s))
+}
