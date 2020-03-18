@@ -228,3 +228,38 @@ func TestJSONMarshalTag(t *testing.T) {
 		t.Fatalf("omitzero field should not present")
 	}
 }
+
+func TestMarshalDeprecatedBy(t *testing.T) {
+	type Struct0 struct {
+		Name string `json:"name"`
+
+		Cloudregion string `json:"cloudregion"`
+		// Deprecated
+		CloudregionId string `json:"cloudregion_id" deprecated-by:"cloudregion"`
+		// Deprecated
+		RegionId string `json:"region_id" deprecated-by:"cloudregion_id"`
+		// Deprecated
+		Region string `json:"region" deprecated-by:"region_id"`
+
+		Loop0 string `json:"loop0" deprecated-by:"loop1"`
+		Loop1 string `json:"loop1" deprecated-by:"loop2"`
+		Loop2 string `json:"loop2" deprecated-by:"loop0"`
+	}
+	s := Struct0{}
+	s.Cloudregion = "region0"
+	jsonS := Marshal(s)
+	s2 := Struct0{}
+	err := jsonS.Unmarshal(&s2)
+	if err != nil {
+		t.Fatalf("unmarshal s3 should success %s", err)
+	}
+	if s2.CloudregionId != s.Cloudregion {
+		t.Errorf("expect s2.CloudregionId(%s) == s.Cloudregion(%s)", s2, s)
+	}
+	if s2.RegionId != s.Cloudregion {
+		t.Errorf("expect s2.RegionId(%s) == s.Cloudregion(%s)", s2, s)
+	}
+	if s2.Region != s.Cloudregion {
+		t.Errorf("expect s2.Region(%s) == s.Cloudregion(%s)", s2, s)
+	}
+}
