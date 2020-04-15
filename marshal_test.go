@@ -235,15 +235,15 @@ func TestMarshalDeprecatedBy(t *testing.T) {
 
 		Cloudregion string `json:"cloudregion"`
 		// Deprecated
-		CloudregionId string `json:"cloudregion_id" deprecated-by:"cloudregion"`
+		CloudregionId string `json:"cloudregion_id" "yunion:deprecated-by":"cloudregion"`
 		// Deprecated
-		RegionId string `json:"region_id" deprecated-by:"cloudregion_id"`
+		RegionId string `json:"region_id" "yunion:deprecated-by":"cloudregion_id"`
 		// Deprecated
-		Region string `json:"region" deprecated-by:"region_id"`
+		Region string `json:"region" "yunion:deprecated-by":"region_id"`
 
-		Loop0 string `json:"loop0" deprecated-by:"loop1"`
-		Loop1 string `json:"loop1" deprecated-by:"loop2"`
-		Loop2 string `json:"loop2" deprecated-by:"loop0"`
+		Loop0 string `json:"loop0" "yunion:deprecated-by":"loop1"`
+		Loop1 string `json:"loop1" "yunion:deprecated-by":"loop2"`
+		Loop2 string `json:"loop2" "yunion:deprecated-by":"loop0"`
 	}
 	s := Struct0{}
 	s.Cloudregion = "region0"
