@@ -317,6 +317,9 @@ func TestUnmarshalJsonTags(t *testing.T) {
 	}{
 		{`{"name":"John","keyword":"json"}`, SJsonTagStruct{Name: "John", Keyword: "json"}},
 		{`{"OS:Name":"John1","key_word":"json2"}`, SJsonTagStruct{Name: "John1", Keyword: "json2"}},
+		{`{"Name":"John1","Keyword":"json2"}`, SJsonTagStruct{Name: "John1", Keyword: "json2"}},
+		{`{"name":"John1","Keyword":"json2"}`, SJsonTagStruct{Name: "John1", Keyword: "json2"}},
+		{`{"NAME":"John1","Keyword":"json2"}`, SJsonTagStruct{Name: "John1", Keyword: "json2"}},
 	}
 	for _, c := range cases {
 		json, _ := ParseString(c.in)
@@ -440,11 +443,11 @@ type ObsoleteStruct struct {
 	CloudEnv  string `json:"cloud_env"`
 	IsPublic  *bool  `json:"is_public"`
 	Project   string `json:"project"`
-	ProjectId string `json:"project_id" deprecated-by:"project"`
-	Tenant    string `json:"tenant" deprecated-by:"project_id"`
-	TenantId  string `json:"tenant_id" deprecated-by:"tenant"`
-	Loop1     string `json:"loop1" deprecated-by:"loop2"`
-	Loop2     string `json:"loop2" deprecated-by:"loop1"`
+	ProjectId string `json:"project_id" "yunion:deprecated-by":"project"`
+	Tenant    string `json:"tenant" "yunion:deprecated-by":"project_id"`
+	TenantId  string `json:"tenant_id" "yunion:deprecated-by":"tenant"`
+	Loop1     string `json:"loop1" "yunion:deprecated-by":"loop2"`
+	Loop2     string `json:"loop2" "yunion:deprecated-by":"loop1"`
 }
 
 func (s *ObsoleteStruct) AfterUnmarshal() {
