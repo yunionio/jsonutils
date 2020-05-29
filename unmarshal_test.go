@@ -560,3 +560,41 @@ func TestUnmarshalDuplicateEmbed(t *testing.T) {
 
 	t.Logf("%s", Marshal(s))
 }
+
+func TestUnmarshalString2Int(t *testing.T) {
+	type sStruct struct {
+		VlanId int     `json:"vlan_id"`
+		Amount float64 `json:"amount"`
+	}
+	cases := []struct {
+		in   string
+		want int
+	}{
+		{
+			in:   `{"vlan_id":"", "amount":""}`,
+			want: 0,
+		},
+		{
+			in:   `{"vlan_id":"10", "amount":"10.0"}`,
+			want: 10,
+		},
+		{
+			in:   `{"vlan_id":"10,000", "amount":"10,000.00"}`,
+			want: 10000,
+		},
+	}
+	for _, c := range cases {
+		json, err := ParseString(c.in)
+		if err != nil {
+			t.Fatalf("ParseString error %s", err)
+		}
+		s := sStruct{}
+		err = json.Unmarshal(&s)
+		if err != nil {
+			t.Errorf("unmarshal vlan_id fail %s", err)
+		}
+		if s.VlanId != c.want {
+			t.Errorf("Unmarshal %s got %d want %d", c.in, s.VlanId, c.want)
+		}
+	}
+}
