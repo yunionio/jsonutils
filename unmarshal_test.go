@@ -565,13 +565,14 @@ func TestUnmarshalString2Int(t *testing.T) {
 	type sStruct struct {
 		VlanId int     `json:"vlan_id"`
 		Amount float64 `json:"amount"`
+		BillId uint64  `json:"bill_id"`
 	}
 	cases := []struct {
 		in   string
 		want int
 	}{
 		{
-			in:   `{"vlan_id":"", "amount":""}`,
+			in:   `{"vlan_id":"", "amount":"", "bill_id":"200"}`,
 			want: 0,
 		},
 		{
