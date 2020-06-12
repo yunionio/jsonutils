@@ -31,6 +31,8 @@ type JSONObject interface {
 	gotypes.ISerializable
 
 	parse(str []byte, offset int) (int, error)
+	writeSource
+
 	// String() string
 	PrettyString() string
 	prettyString(level int) string

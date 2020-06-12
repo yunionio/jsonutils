@@ -1,8 +1,8 @@
 package jsonutils
 
 import (
-	"bytes"
 	"fmt"
+	"strings"
 )
 
 func (this *JSONString) String() string {
@@ -30,32 +30,13 @@ func (this *JSONBool) String() string {
 }
 
 func (this *JSONDict) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteByte('{')
-	var idx = 0
-	for _, k := range this.SortedKeys() {
-		v := this.data[k]
-		if idx > 0 {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(quoteString(k))
-		buffer.WriteByte(':')
-		buffer.WriteString(v.String())
-		idx++
-	}
-	buffer.WriteByte('}')
-	return buffer.String()
+	sb := &strings.Builder{}
+	this.buildString(sb)
+	return sb.String()
 }
 
 func (this *JSONArray) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteByte('[')
-	for idx, v := range this.data {
-		if idx > 0 {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(v.String())
-	}
-	buffer.WriteByte(']')
-	return buffer.String()
+	sb := &strings.Builder{}
+	this.buildString(sb)
+	return sb.String()
 }
