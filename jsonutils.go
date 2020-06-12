@@ -98,12 +98,14 @@ type JSONBool struct {
 }
 
 func skipEmpty(str []byte, offset int) int {
-	const (
-		EMPTYSTR = " \t\n\r"
-	)
 	i := offset
-	for i < len(str) && strings.IndexByte(EMPTYSTR, str[i]) >= 0 {
-		i++
+	for i < len(str) {
+		switch str[i] {
+		case ' ', '\t', '\n', '\r':
+			i++
+		default:
+			return i
+		}
 	}
 	return i
 }
