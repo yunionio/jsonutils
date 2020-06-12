@@ -154,72 +154,80 @@ func hexstr2rune(str []byte) (rune, error) {
 func parseString(str []byte, offset int) (string, bool, int, error) {
 	var (
 		buffer    []byte
-		endstr    string
 		runebytes = make([]byte, 4)
 		runen     int
 		i         = offset
+		endstr    string
 		quote     bool
+		quotec    byte
 	)
 	if str[i] == '"' {
-		endstr = "\""
 		i++
 		quote = true
+		quotec = '"'
 	} else if str[i] == '\'' {
-		endstr = "'"
 		i++
 		quote = true
+		quotec = '\''
 	} else {
 		endstr = " :,\t\n}]"
 	}
+ret:
 	for i < len(str) {
-		if quote && str[i] == '\\' {
-			if i+1 < len(str) {
-				i++
-				switch str[i] {
-				case 'u':
+		if quote {
+			switch str[i] {
+			case '\\':
+				if i+1 < len(str) {
 					i++
-					if i+4 >= len(str) {
-						return "", quote, i, NewJSONError(str, i, "Incomplete unicode")
+					switch str[i] {
+					case 'u':
+						i++
+						if i+4 >= len(str) {
+							return "", quote, i, NewJSONError(str, i, "Incomplete unicode")
+						}
+						r, e := hexstr2rune(str[i : i+4])
+						if e != nil {
+							return "", quote, i, NewJSONError(str, i, e.Error())
+						}
+						runen = utf8.EncodeRune(runebytes, r)
+						buffer = append(buffer, runebytes[0:runen]...)
+						i += 4
+					case 'x':
+						i++
+						if i+2 >= len(str) {
+							return "", quote, i, NewJSONError(str, i, "Incomplete hex")
+						}
+						b, e := hexstr2byte(str[i : i+2])
+						if e != nil {
+							return "", quote, i, NewJSONError(str, i, e.Error())
+						}
+						buffer = append(buffer, b)
+						i += 2
+					case 'n':
+						buffer = append(buffer, '\n')
+						i++
+					case 'r':
+						buffer = append(buffer, '\r')
+						i++
+					case 't':
+						buffer = append(buffer, '\t')
+						i++
+					default:
+						buffer = append(buffer, str[i])
+						i++
 					}
-					r, e := hexstr2rune(str[i : i+4])
-					if e != nil {
-						return "", quote, i, NewJSONError(str, i, e.Error())
-					}
-					runen = utf8.EncodeRune(runebytes, r)
-					buffer = append(buffer, runebytes[0:runen]...)
-					i += 4
-				case 'x':
-					i++
-					if i+2 >= len(str) {
-						return "", quote, i, NewJSONError(str, i, "Incomplete hex")
-					}
-					b, e := hexstr2byte(str[i : i+2])
-					if e != nil {
-						return "", quote, i, NewJSONError(str, i, e.Error())
-					}
-					buffer = append(buffer, b)
-					i += 2
-				case 'n':
-					buffer = append(buffer, '\n')
-					i++
-				case 'r':
-					buffer = append(buffer, '\r')
-					i++
-				case 't':
-					buffer = append(buffer, '\t')
-					i++
-				default:
-					buffer = append(buffer, str[i])
-					i++
+				} else {
+					return "", quote, i, NewJSONError(str, i, "Incomplete escape")
 				}
-			} else {
-				return "", quote, i, NewJSONError(str, i, "Incomplete escape")
+			case quotec:
+				i++
+				break ret
+			default:
+				buffer = append(buffer, str[i])
+				i++
 			}
 		} else if strings.IndexByte(endstr, str[i]) >= 0 {
-			if quote {
-				i++
-			}
-			break
+			break ret
 		} else {
 			buffer = append(buffer, str[i])
 			i++
