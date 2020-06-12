@@ -217,8 +217,7 @@ ret:
 
 func parseString(str []byte, offset int) (string, bool, int, error) {
 	var (
-		buffer []byte
-		i      = offset
+		i = offset
 	)
 	if c := str[i]; c == '"' || c == '\'' {
 		r, newOfs, err := parseQuoteString(str, i+1, c)
@@ -230,11 +229,10 @@ ret2:
 		case ' ', ':', ',', '\t', '\n', '}', ']':
 			break ret2
 		default:
-			buffer = append(buffer, str[i])
 			i++
 		}
 	}
-	return string(buffer), false, i, nil
+	return string(str[offset:i]), false, i, nil
 }
 
 func parseJSONValue(str []byte, offset int) (JSONObject, int, error) {
