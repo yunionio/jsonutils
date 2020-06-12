@@ -16,7 +16,6 @@ package jsonutils
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
@@ -290,10 +289,6 @@ func quoteString(str string) string {
 	return sb.String()
 }
 
-func (this *JSONString) String() string {
-	return quoteString(this.data)
-}
-
 func jsonPrettyString(o JSONObject, level int) string {
 	var buffer bytes.Buffer
 	for i := 0; i < level; i++ {
@@ -319,20 +314,12 @@ func (this *JSONValue) parse(str []byte, offset int) (int, error) {
 	return 0, nil
 }
 
-func (this *JSONValue) String() string {
-	return "null"
-}
-
 func (this *JSONValue) PrettyString() string {
 	return this.String()
 }
 
 func (this *JSONValue) prettyString(level int) string {
 	return jsonPrettyString(this, level)
-}
-
-func (this *JSONInt) String() string {
-	return fmt.Sprintf("%d", this.data)
 }
 
 func (this *JSONInt) PrettyString() string {
@@ -347,10 +334,6 @@ func (this *JSONInt) Value() int64 {
 	return this.data
 }
 
-func (this *JSONFloat) String() string {
-	return fmt.Sprintf("%f", this.data)
-}
-
 func (this *JSONFloat) PrettyString() string {
 	return this.String()
 }
@@ -361,14 +344,6 @@ func (this *JSONFloat) prettyString(level int) string {
 
 func (this *JSONFloat) Value() float64 {
 	return this.data
-}
-
-func (this *JSONBool) String() string {
-	if this.data {
-		return "true"
-	} else {
-		return "false"
-	}
 }
 
 func (this *JSONBool) PrettyString() string {
@@ -524,24 +499,6 @@ func (this *JSONDict) SortedKeys() []string {
 	return keys
 }
 
-func (this *JSONDict) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteByte('{')
-	var idx = 0
-	for _, k := range this.SortedKeys() {
-		v := this.data[k]
-		if idx > 0 {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(quoteString(k))
-		buffer.WriteByte(':')
-		buffer.WriteString(v.String())
-		idx++
-	}
-	buffer.WriteByte('}')
-	return buffer.String()
-}
-
 func (this *JSONDict) PrettyString() string {
 	return this.prettyString(0)
 }
@@ -596,19 +553,6 @@ func (this *JSONArray) parse(str []byte, offset int) (int, error) {
 		this.data = val
 	}
 	return i, errors.Wrap(e, "parseArray")
-}
-
-func (this *JSONArray) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteByte('[')
-	for idx, v := range this.data {
-		if idx > 0 {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(v.String())
-	}
-	buffer.WriteByte(']')
-	return buffer.String()
 }
 
 func (this *JSONArray) PrettyString() string {
