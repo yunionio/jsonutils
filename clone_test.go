@@ -84,8 +84,8 @@ func TestDeepCopyCompound(t *testing.T) {
 				t.Fatalf("must parse, got %s", err)
 			}
 			objC := DeepCopy(obj)
-			if !reflect.DeepEqual(obj, objC) {
-				t.Fatalf("want %s, got %s", obj.String(), objC.String())
+			if !obj.Equals(objC) {
+				t.Fatalf("want\n%s\n, got\n%s", obj.String(), objC.String())
 			}
 			switch v := objC.(type) {
 			case *JSONArray:
@@ -94,7 +94,7 @@ func TestDeepCopyCompound(t *testing.T) {
 			case *JSONDict:
 				v.Set("id", NewString("nobody"))
 			}
-			if reflect.DeepEqual(obj, objC) {
+			if obj.Equals(objC) {
 				t.Fatalf("not copied: %s", obj.String())
 			}
 		})

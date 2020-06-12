@@ -460,14 +460,16 @@ func parseDict(str []byte, offset int) (map[string]JSONObject, int, error) {
 }
 
 func parseArray(str []byte, offset int) ([]JSONObject, int, error) {
-	var list = make([]JSONObject, 0)
 	if str[offset] != '[' {
-		return list, offset, NewJSONError(str, offset, "[ not found")
+		return nil, offset, NewJSONError(str, offset, "[ not found")
 	}
-	var i = offset + 1
-	var val JSONObject = nil
-	var e error = nil
-	var stop = false
+	var (
+		list []JSONObject
+		i    = offset + 1
+		val  JSONObject
+		e    error
+		stop bool
+	)
 	for !stop && i < len(str) {
 		i = skipEmpty(str, i)
 		if i >= len(str) {
