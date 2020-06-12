@@ -130,3 +130,29 @@ func BenchmarkParseString(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkStringify(b *testing.B) {
+	cases := []struct {
+		name string
+		c    string
+		obj  JSONObject
+	}{
+		{
+			name: "all",
+			c:    `{"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"}`,
+		},
+	}
+	for _, c := range cases {
+		var err error
+		c.obj, err = ParseString(c.c)
+		if err != nil {
+			b.Fatalf("%s: bad case: %v", c.name, err)
+		}
+
+		b.Run(c.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				c.obj.String()
+			}
+		})
+	}
+}
