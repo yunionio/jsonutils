@@ -110,3 +110,23 @@ func TestJSONParse(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkParseString(b *testing.B) {
+	cases := []struct {
+		name string
+		c    string
+	}{
+		{
+			name: "all",
+			c:    `{"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"}`,
+		},
+	}
+
+	for _, c := range cases {
+		b.Run(c.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ParseString(c.c)
+			}
+		})
+	}
+}
