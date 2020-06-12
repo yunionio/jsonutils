@@ -152,12 +152,14 @@ func hexstr2rune(str []byte) (rune, error) {
 }
 
 func parseString(str []byte, offset int) (string, bool, int, error) {
-	var buffer bytes.Buffer
-	var endstr string
-	var runebytes = make([]byte, 4)
-	var runen int
-	var i = offset
-	var quote bool = false
+	var (
+		buffer    []byte
+		endstr    string
+		runebytes = make([]byte, 4)
+		runen     int
+		i         = offset
+		quote     bool
+	)
 	if str[i] == '"' {
 		endstr = "\""
 		i++
@@ -184,7 +186,7 @@ func parseString(str []byte, offset int) (string, bool, int, error) {
 						return "", quote, i, NewJSONError(str, i, e.Error())
 					}
 					runen = utf8.EncodeRune(runebytes, r)
-					buffer.Write(runebytes[0:runen])
+					buffer = append(buffer, runebytes[0:runen]...)
 					i += 4
 				case 'x':
 					i++
@@ -195,19 +197,19 @@ func parseString(str []byte, offset int) (string, bool, int, error) {
 					if e != nil {
 						return "", quote, i, NewJSONError(str, i, e.Error())
 					}
-					buffer.WriteByte(b)
+					buffer = append(buffer, b)
 					i += 2
 				case 'n':
-					buffer.WriteByte('\n')
+					buffer = append(buffer, '\n')
 					i++
 				case 'r':
-					buffer.WriteByte('\r')
+					buffer = append(buffer, '\r')
 					i++
 				case 't':
-					buffer.WriteByte('\t')
+					buffer = append(buffer, '\t')
 					i++
 				default:
-					buffer.WriteByte(str[i])
+					buffer = append(buffer, str[i])
 					i++
 				}
 			} else {
@@ -219,11 +221,11 @@ func parseString(str []byte, offset int) (string, bool, int, error) {
 			}
 			break
 		} else {
-			buffer.WriteByte(str[i])
+			buffer = append(buffer, str[i])
 			i++
 		}
 	}
-	return buffer.String(), quote, i, nil
+	return string(buffer), quote, i, nil
 }
 
 func parseJSONValue(str []byte, offset int) (JSONObject, int, error) {
