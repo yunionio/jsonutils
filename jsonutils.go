@@ -157,7 +157,6 @@ func parseString(str []byte, offset int) (string, bool, int, error) {
 		runebytes = make([]byte, 4)
 		runen     int
 		i         = offset
-		endstr    string
 		quote     bool
 		quotec    byte
 	)
@@ -169,8 +168,6 @@ func parseString(str []byte, offset int) (string, bool, int, error) {
 		i++
 		quote = true
 		quotec = '\''
-	} else {
-		endstr = " :,\t\n}]"
 	}
 ret:
 	for i < len(str) {
@@ -226,11 +223,14 @@ ret:
 				buffer = append(buffer, str[i])
 				i++
 			}
-		} else if strings.IndexByte(endstr, str[i]) >= 0 {
-			break ret
 		} else {
-			buffer = append(buffer, str[i])
-			i++
+			switch str[i] {
+			case ' ', ':', ',', '\t', '\n':
+				break ret
+			default:
+				buffer = append(buffer, str[i])
+				i++
+			}
 		}
 	}
 	return string(buffer), quote, i, nil
