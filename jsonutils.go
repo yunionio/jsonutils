@@ -151,89 +151,90 @@ func hexstr2rune(str []byte) (rune, error) {
 	return rune(v1)*256 + rune(v2), nil
 }
 
-func parseString(str []byte, offset int) (string, bool, int, error) {
+func parseQuoteString(str []byte, offset int, quotec byte) (string, int, error) {
 	var (
 		buffer    []byte
 		runebytes = make([]byte, 4)
 		runen     int
 		i         = offset
-		quote     bool
-		quotec    byte
 	)
-	if str[i] == '"' {
-		i++
-		quote = true
-		quotec = '"'
-	} else if str[i] == '\'' {
-		i++
-		quote = true
-		quotec = '\''
-	}
 ret:
 	for i < len(str) {
-		if quote {
-			switch str[i] {
-			case '\\':
-				if i+1 < len(str) {
+		switch str[i] {
+		case '\\':
+			if i+1 < len(str) {
+				i++
+				switch str[i] {
+				case 'u':
 					i++
-					switch str[i] {
-					case 'u':
-						i++
-						if i+4 >= len(str) {
-							return "", quote, i, NewJSONError(str, i, "Incomplete unicode")
-						}
-						r, e := hexstr2rune(str[i : i+4])
-						if e != nil {
-							return "", quote, i, NewJSONError(str, i, e.Error())
-						}
-						runen = utf8.EncodeRune(runebytes, r)
-						buffer = append(buffer, runebytes[0:runen]...)
-						i += 4
-					case 'x':
-						i++
-						if i+2 >= len(str) {
-							return "", quote, i, NewJSONError(str, i, "Incomplete hex")
-						}
-						b, e := hexstr2byte(str[i : i+2])
-						if e != nil {
-							return "", quote, i, NewJSONError(str, i, e.Error())
-						}
-						buffer = append(buffer, b)
-						i += 2
-					case 'n':
-						buffer = append(buffer, '\n')
-						i++
-					case 'r':
-						buffer = append(buffer, '\r')
-						i++
-					case 't':
-						buffer = append(buffer, '\t')
-						i++
-					default:
-						buffer = append(buffer, str[i])
-						i++
+					if i+4 >= len(str) {
+						return "", i, NewJSONError(str, i, "Incomplete unicode")
 					}
-				} else {
-					return "", quote, i, NewJSONError(str, i, "Incomplete escape")
+					r, e := hexstr2rune(str[i : i+4])
+					if e != nil {
+						return "", i, NewJSONError(str, i, e.Error())
+					}
+					runen = utf8.EncodeRune(runebytes, r)
+					buffer = append(buffer, runebytes[0:runen]...)
+					i += 4
+				case 'x':
+					i++
+					if i+2 >= len(str) {
+						return "", i, NewJSONError(str, i, "Incomplete hex")
+					}
+					b, e := hexstr2byte(str[i : i+2])
+					if e != nil {
+						return "", i, NewJSONError(str, i, e.Error())
+					}
+					buffer = append(buffer, b)
+					i += 2
+				case 'n':
+					buffer = append(buffer, '\n')
+					i++
+				case 'r':
+					buffer = append(buffer, '\r')
+					i++
+				case 't':
+					buffer = append(buffer, '\t')
+					i++
+				default:
+					buffer = append(buffer, str[i])
+					i++
 				}
-			case quotec:
-				i++
-				break ret
-			default:
-				buffer = append(buffer, str[i])
-				i++
+			} else {
+				return "", i, NewJSONError(str, i, "Incomplete escape")
 			}
-		} else {
-			switch str[i] {
-			case ' ', ':', ',', '\t', '\n':
-				break ret
-			default:
-				buffer = append(buffer, str[i])
-				i++
-			}
+		case quotec:
+			i++
+			break ret
+		default:
+			buffer = append(buffer, str[i])
+			i++
 		}
 	}
-	return string(buffer), quote, i, nil
+	return string(buffer), i, nil
+}
+
+func parseString(str []byte, offset int) (string, bool, int, error) {
+	var (
+		buffer []byte
+		i      = offset
+	)
+	if c := str[i]; c == '"' || c == '\'' {
+		r, newOfs, err := parseQuoteString(str, i+1, c)
+		return r, true, newOfs, err
+	}
+ret2:
+	for i < len(str) {
+		switch str[i] {
+		case ' ', ':', ',', '\t', '\n', '}', ']':
+			break ret2
+		default:
+			buffer = append(buffer, str[i])
+			i++
+		}
+	}
+	return string(buffer), false, i, nil
 }
 
 func parseJSONValue(str []byte, offset int) (JSONObject, int, error) {
