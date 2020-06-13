@@ -267,26 +267,27 @@ func parseJSONValue(str []byte, offset int) (JSONObject, int, error) {
 }
 
 func quoteString(str string) string {
-	buf := make([]byte, 0, len(str)+2)
-	buf = append(buf, '"')
+	sb := &strings.Builder{}
+	sb.Grow(len(str) + 2)
+	sb.WriteByte('"')
 	for i := 0; i < len(str); i++ {
 		switch c := str[i]; c {
 		case '"':
-			buf = append(buf, '\\', '"')
+			sb.Write([]byte{'\\', '"'})
 		case '\r':
-			buf = append(buf, '\\', 'r')
+			sb.Write([]byte{'\\', 'r'})
 		case '\n':
-			buf = append(buf, '\\', 'n')
+			sb.Write([]byte{'\\', 'n'})
 		case '\t':
-			buf = append(buf, '\\', 't')
+			sb.Write([]byte{'\\', 't'})
 		case '\\':
-			buf = append(buf, '\\', '\\')
+			sb.Write([]byte{'\\', '\\'})
 		default:
-			buf = append(buf, c)
+			sb.WriteByte(c)
 		}
 	}
-	buf = append(buf, '"')
-	return string(buf)
+	sb.WriteByte('"')
+	return sb.String()
 }
 
 func (this *JSONString) String() string {
