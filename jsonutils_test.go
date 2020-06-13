@@ -131,6 +131,29 @@ func BenchmarkParseString(b *testing.B) {
 	}
 }
 
+func Benchmark_quoteString(b *testing.B) {
+	cases := []struct {
+		name string
+		in   string
+	}{
+		{
+			name: "no escape",
+			in:   "hello world",
+		},
+		{
+			name: "escape",
+			in:   "hello\nworld\r\t\\",
+		},
+	}
+	for _, c := range cases {
+		b.Run(c.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				quoteString(c.in)
+			}
+		})
+	}
+}
+
 func BenchmarkStringify(b *testing.B) {
 	cases := []struct {
 		name string
