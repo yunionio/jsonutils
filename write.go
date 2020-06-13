@@ -31,14 +31,13 @@ func (this *JSONBool) buildString(sb *strings.Builder) {
 func (this *JSONDict) buildString(sb *strings.Builder) {
 	sb.WriteByte('{')
 	var idx = 0
-	for _, k := range this.SortedKeys() {
+	for k, v := range this.data {
 		if idx > 0 {
 			sb.WriteByte(',')
 		}
 		sb.WriteString(quoteString(k))
 		sb.WriteByte(':')
 
-		v := this.data[k]
 		v.buildString(sb)
 		idx++
 	}

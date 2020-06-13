@@ -183,11 +183,15 @@ func TestMarshalPtr(t *testing.T) {
 	jsonStrNonNil := Marshal(ptrsNonNil).String()
 
 	// unmarshal nils to non nils should perform override, partial if the source is not FULL
-	jsonObjNil.Unmarshal(ptrsNonNil)
-	jsonObj2 := Marshal(ptrsNonNil)
-	jsonObj2Str := jsonObj2.String()
-	if jsonObj2Str != "{}" {
-		t.Errorf("unmarshal result should be {}, got %s", jsonObj2Str)
+	{
+		nils := *ptrsNonNil
+		pnils := &nils
+		jsonObjNil.Unmarshal(pnils)
+		jsonObj2 := Marshal(pnils)
+		jsonObj2Str := jsonObj2.String()
+		if jsonObj2Str != "{}" {
+			t.Errorf("unmarshal result should be {}, got %s", jsonObj2Str)
+		}
 	}
 
 	// unmarshal non nil str will restore correctly
@@ -201,9 +205,8 @@ func TestMarshalPtr(t *testing.T) {
 		if err != nil {
 			t.Errorf("unmarshal error: %s", err)
 		}
-		jsonStrAgain := Marshal(ptrs).String()
-		if jsonStrAgain != jsonStrNonNil {
-			t.Errorf("reverse failed: want %s, got %s", jsonStrNonNil, jsonStrAgain)
+		if !reflect.DeepEqual(ptrs, ptrsNonNil) {
+			t.Errorf("reverse failed: want\n%#v\ngot\n%#v", ptrsNonNil, ptrs)
 		}
 	}
 }
@@ -275,9 +278,8 @@ func TestJSONArrayUnmarshal(t *testing.T) {
 
 	dest := JSONArray{}
 	jsonArr.Unmarshal(&dest)
-	t.Logf("%s", dest)
-	if Marshal(dest).String() != s {
-		t.Errorf("TestJSONArrayUnmarshal errors")
+	if jsonArr1 := Marshal(dest); !jsonArr1.Equals(jsonArr) {
+		t.Errorf("json array unmarshal, want:\n%s\ngot:\n%s", jsonArr.String(), jsonArr1.String())
 	}
 }
 
