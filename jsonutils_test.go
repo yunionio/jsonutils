@@ -110,3 +110,72 @@ func TestJSONParse(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkParseString(b *testing.B) {
+	cases := []struct {
+		name string
+		c    string
+	}{
+		{
+			name: "all",
+			c:    `{"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"}`,
+		},
+	}
+
+	for _, c := range cases {
+		b.Run(c.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ParseString(c.c)
+			}
+		})
+	}
+}
+
+func Benchmark_quoteString(b *testing.B) {
+	cases := []struct {
+		name string
+		in   string
+	}{
+		{
+			name: "no escape",
+			in:   "hello world",
+		},
+		{
+			name: "escape",
+			in:   "hello\nworld\r\t\\",
+		},
+	}
+	for _, c := range cases {
+		b.Run(c.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				quoteString(c.in)
+			}
+		})
+	}
+}
+
+func BenchmarkStringify(b *testing.B) {
+	cases := []struct {
+		name string
+		c    string
+		obj  JSONObject
+	}{
+		{
+			name: "all",
+			c:    `{"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"}`,
+		},
+	}
+	for _, c := range cases {
+		var err error
+		c.obj, err = ParseString(c.c)
+		if err != nil {
+			b.Fatalf("%s: bad case: %v", c.name, err)
+		}
+
+		b.Run(c.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				c.obj.String()
+			}
+		})
+	}
+}
