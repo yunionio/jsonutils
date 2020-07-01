@@ -102,6 +102,73 @@ func TestJSONDict_Unmarshal(t *testing.T) {
 
 }
 
+func TestJSONValue_Unmarshal(t *testing.T) {
+	jsonvalue := &JSONValue{}
+	var (
+		obj1 = "json"
+		obj2 = 2
+		obj3 = struct {
+			Name string
+		}{
+			"json",
+		}
+		obj4 JSONObject
+	)
+	var (
+		want1 = ""
+		want2 = 0
+		want3 = struct {
+			Name string
+		}{}
+		want4 JSONObject
+	)
+	cases := []struct {
+		name    string
+		obj     interface{}
+		keys    []string
+		wantObj interface{}
+		isErr   bool
+	}{
+		{
+			name:    "string test",
+			obj:     &obj1,
+			wantObj: &want1,
+		},
+		{
+			name:    "int test",
+			obj:     &obj2,
+			wantObj: &want2,
+		},
+		{
+			name:    "struct test",
+			obj:     &obj3,
+			wantObj: &want3,
+		},
+		{
+			name:    "interface test",
+			obj:     obj4,
+			wantObj: want4,
+		},
+		{
+			name:  "haven key test",
+			keys:  []string{"json"},
+			isErr: true,
+		},
+	}
+	for _, c := range cases {
+		err := jsonvalue.Unmarshal(c.obj, c.keys...)
+		if err != nil && !c.isErr {
+			t.Fatalf("There shouldn't be an error for %s", c.name)
+		}
+		if err == nil && c.isErr {
+			t.Fatalf("There should be an error for %s", c.name)
+		}
+		if !reflect.DeepEqual(c.obj, c.wantObj) {
+			t.Fatalf("For %s, want: %#v, actual: %#v", c.name, c.wantObj, c.obj)
+		}
+	}
+}
+
 func TestUnmarshalTime(t *testing.T) {
 	type TimeStruct struct {
 		EndTime time.Time
