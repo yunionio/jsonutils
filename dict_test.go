@@ -15,6 +15,7 @@
 package jsonutils
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -49,5 +50,19 @@ func TestDiff(t *testing.T) {
 	}
 	if !aAndB.Contains("description") {
 		t.Errorf("a and b should contains description")
+	}
+}
+
+func TestDictKeyOrder(t *testing.T) {
+	dict := NewDict()
+	for i := 0; i < 26; i += 1 {
+		key := fmt.Sprintf("%c%c", 'A'+i, 'a'+i)
+		dict.Add(NewInt(int64(i)), key)
+	}
+	dictStr := dict.String()
+	for i := 0; i < 26; i += 1 {
+		if dict.String() != dictStr {
+			t.Fatalf("dict string changed!!!")
+		}
 	}
 }

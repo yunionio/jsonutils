@@ -31,7 +31,8 @@ func (this *JSONBool) buildString(sb *strings.Builder) {
 func (this *JSONDict) buildString(sb *strings.Builder) {
 	sb.WriteByte('{')
 	var idx = 0
-	for k, v := range this.data {
+	for _, k := range this.SortedKeys() {
+		v := this.data[k]
 		if idx > 0 {
 			sb.WriteByte(',')
 		}
