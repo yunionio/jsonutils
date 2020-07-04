@@ -77,12 +77,13 @@ func TestNewBool(t *testing.T) {
 }
 
 func TestJSONDictRemove(t *testing.T) {
-	jd := JSONDict{
-		data: map[string]JSONObject{
-			"Hello": NewString("world"),
-			"hello": NewString("world"),
-			"HELLO": NewString("world"),
-		},
+	jd := NewDict()
+	for k, v := range map[string]JSONObject{
+		"Hello": NewString("world"),
+		"hello": NewString("world"),
+		"HELLO": NewString("world"),
+	} {
+		jd.Set(k, v)
 	}
 	var removed bool
 	if removed = jd.Remove("HEllo"); removed {

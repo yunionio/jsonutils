@@ -2,6 +2,8 @@ package jsonutils
 
 import (
 	"strings"
+
+	"yunion.io/x/pkg/sortedmap"
 )
 
 type writeSource interface {
@@ -31,8 +33,9 @@ func (this *JSONBool) buildString(sb *strings.Builder) {
 func (this *JSONDict) buildString(sb *strings.Builder) {
 	sb.WriteByte('{')
 	var idx = 0
-	for _, k := range this.SortedKeys() {
-		v := this.data[k]
+	for iter := sortedmap.NewIterator(this.data); iter.HasMore(); iter.Next() {
+		k, vinf := iter.Get()
+		v := vinf.(JSONObject)
 		if idx > 0 {
 			sb.WriteByte(',')
 		}

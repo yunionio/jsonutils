@@ -89,8 +89,7 @@ func TestDeepCopyCompound(t *testing.T) {
 			}
 			switch v := objC.(type) {
 			case *JSONArray:
-				elems, _ := v.GetArray()
-				elems[0] = NewString("who knows me")
+				v.SetAt(0, NewString("who knows me"))
 			case *JSONDict:
 				v.Set("id", NewString("nobody"))
 			}
