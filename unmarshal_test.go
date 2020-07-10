@@ -668,3 +668,26 @@ func TestUnmarshalString2Int(t *testing.T) {
 		}
 	}
 }
+
+func TestUnmarshalJSONDictPtr(t *testing.T) {
+	cases := []string{
+		`{}`,
+		`{"name":"jack"}`,
+		`{"__request_context":{"request_id":"cbde96","service_name":"region","trace":{"debug":true,"duration":0,"id":"0","kind":"SERVER","local_endpoint":{"port":0,"service_name":"region"},"name":"delete","remote_endpoint":{"addr":"10.168.222.188","port":57240,"service_name":"(unknown_service)"},"shared":false,"tags":{"resource":"cloudaccounts"},"timestamp":"2020-04-11T06:37:07.100833Z","trace_id":"1866608c"}},"__stages":[{"complete_at":"2020-04-11T14:44:57Z","name":"on_init"}],"parent_task_id":"65617a87-3ecd-40c0-8add-70e17fec8ab2"}`,
+	}
+	for _, str := range cases {
+		json, err := ParseString(str)
+		if err != nil {
+			t.Fatalf("parsestring fail %s", err)
+		}
+		dest := NewDict()
+		err = json.Unmarshal(dest)
+		if err != nil {
+			t.Fatalf("Unmarshal *JSONDict fail %s", err)
+		}
+		if !json.Equals(dest) {
+			t.Fatalf("want %s got %s", json, dest)
+		}
+		t.Logf("want %s", dest)
+	}
+}
