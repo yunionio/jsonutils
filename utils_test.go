@@ -17,6 +17,7 @@ package jsonutils
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestGetQueryStringArray(t *testing.T) {
@@ -41,5 +42,18 @@ func TestGetArrayOfPrefix(t *testing.T) {
 	retArray := GetArrayOfPrefix(json, "key")
 	if len(retArray) != 10 {
 		t.Errorf("fail to getarrayofprefix")
+	}
+}
+
+func TestNewTimeString(t *testing.T) {
+	t1 := time.Now()
+	j1 := NewTimeString(t1)
+	v1, err := j1.GetTime()
+	if err != nil {
+		t.Errorf("failed get time form time string %s", err)
+	}
+	t2 := time.Now()
+	if !t2.After(v1) {
+		t.Errorf("unexpected result, time now (%s) should after time string (%s)", t2, v1)
 	}
 }
