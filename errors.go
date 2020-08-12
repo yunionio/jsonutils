@@ -6,7 +6,7 @@ import (
 	"yunion.io/x/pkg/errors"
 )
 
-var (
+const (
 	ErrJsonDictFailInsert = errors.Error("fail to insert object")
 
 	ErrInvalidJsonDict    = errors.Error("not a valid JSONDict")
