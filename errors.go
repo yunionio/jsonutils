@@ -31,8 +31,8 @@ const (
 	ErrInterfaceUnsupported = errors.Error("do not known how to deserialize json into this interface type")
 	ErrMapKeyMustString     = errors.Error("map key must be string")
 
-	ErrMisingInputField = errors.Error("missing input field")
-	ErrNilInputField    = errors.Error("nil input field")
+	ErrMissingInputField = errors.Error("missing input field")
+	ErrNilInputField     = errors.Error("nil input field")
 
 	ErrYamlMissingDictKey = errors.Error("Cannot find JSONDict key")
 	ErrYamlIllFormat      = errors.Error("Illformat")
