@@ -43,58 +43,63 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"Cannot find JSONDict key": 2,
-	"Illformat":                12,
-	"do not known how to deserialize json into this interface type": 14,
-	"fail to insert object":           5,
-	"invalid 4 byte rune":             20,
-	"invalid char":                    16,
-	"invalid hex":                     7,
-	"key not found":                   13,
-	"map key must be string":          11,
-	"missing input field":             3,
-	"nil input field":                 6,
-	"not a valid JSONArray":           0,
-	"not a valid JSONDict":            9,
-	"not a valid boolean":             4,
-	"not a valid float":               17,
-	"not a valid number":              15,
-	"not a valid string":              19,
-	"out of index range":              21,
-	"out of key range":                8,
-	"unmarshal array length mismatch": 10,
-	"unmarshal type mismatch":         18,
-	"unsupported operation":           1,
+	"Cannot find JSONDict key": 20,
+	"Illformat":                21,
+	"do not known how to deserialize json into this interface type": 16,
+	"fail to insert object":           0,
+	"invalid 4 byte rune":             13,
+	"invalid char":                    11,
+	"invalid hex":                     12,
+	"key not found":                   7,
+	"map key must be string":          17,
+	"missing input field":             18,
+	"nil input field":                 19,
+	"not a valid JSONArray":           2,
+	"not a valid JSONDict":            1,
+	"not a valid boolean":             5,
+	"not a valid float":               4,
+	"not a valid number":              3,
+	"not a valid string":              6,
+	"out of index range":              10,
+	"out of key range":                9,
+	"unmarshal array length mismatch": 15,
+	"unmarshal type mismatch":         14,
+	"unsupported operation":           8,
 }
 
 var en_USIndex = []uint32{ // 23 elements
-	0x00000000, 0x00000016, 0x0000002c, 0x00000045,
-	0x00000059, 0x0000006d, 0x00000083, 0x00000093,
-	0x0000009f, 0x000000b0, 0x000000c5, 0x000000e5,
-	0x000000fc, 0x00000106, 0x00000114, 0x00000152,
-	0x00000165, 0x00000172, 0x00000184, 0x0000019c,
-	0x000001af, 0x000001c3, 0x000001d6,
+	0x00000000, 0x00000016, 0x0000002b, 0x00000041,
+	0x00000054, 0x00000066, 0x0000007a, 0x0000008d,
+	0x0000009b, 0x000000b1, 0x000000c2, 0x000000d5,
+	0x000000e2, 0x000000ee, 0x00000102, 0x0000011a,
+	0x0000013a, 0x00000178, 0x0000018f, 0x000001a3,
+	0x000001b3, 0x000001cc, 0x000001d6,
 } // Size: 116 bytes
 
 const en_USData string = "" + // Size: 470 bytes
-	"\x02not a valid JSONArray\x02unsupported operation\x02Cannot find JSONDi" +
-	"ct key\x02missing input field\x02not a valid boolean\x02fail to insert o" +
-	"bject\x02nil input field\x02invalid hex\x02out of key range\x02not a val" +
-	"id JSONDict\x02unmarshal array length mismatch\x02map key must be string" +
-	"\x02Illformat\x02key not found\x02do not known how to deserialize json i" +
-	"nto this interface type\x02not a valid number\x02invalid char\x02not a v" +
-	"alid float\x02unmarshal type mismatch\x02not a valid string\x02invalid 4" +
-	" byte rune\x02out of index range"
+	"\x02fail to insert object\x02not a valid JSONDict\x02not a valid JSONArr" +
+	"ay\x02not a valid number\x02not a valid float\x02not a valid boolean\x02" +
+	"not a valid string\x02key not found\x02unsupported operation\x02out of k" +
+	"ey range\x02out of index range\x02invalid char\x02invalid hex\x02invalid" +
+	" 4 byte rune\x02unmarshal type mismatch\x02unmarshal array length mismat" +
+	"ch\x02do not known how to deserialize json into this interface type\x02m" +
+	"ap key must be string\x02missing input field\x02nil input field\x02Canno" +
+	"t find JSONDict key\x02Illformat"
 
 var zh_CNIndex = []uint32{ // 23 elements
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000017, 0x00000026, 0x00000036,
+	0x00000046, 0x00000059, 0x0000006c, 0x0000007f,
+	0x00000095, 0x000000a8, 0x000000c1, 0x000000d8,
+	0x000000e8, 0x000000fd, 0x0000010b, 0x00000124,
+	0x00000155, 0x00000155, 0x0000017b, 0x00000191,
+	0x000001a8, 0x000001bd, 0x000001cd,
 } // Size: 116 bytes
 
-const zh_CNData string = ""
+const zh_CNData string = "" + // Size: 461 bytes
+	"\x02插入JSONObject失败\x02不是JSONDict\x02不是JSONArray\x02无数的整数\x02无数的浮点数\x02无效" +
+	"的布尔值\x02无效的字符串\x02找不到指定键值\x02不支持的操作\x02找不到指定键序列\x02JSON数组下标越界\x02无数的字符" +
+	"\x02无效的16进制串\x02无效的rune\x02unmarshal类型不匹配\x02unmarshal时Go数组与JSON array长度" +
+	"不匹配\x02JSON字典的键类型必须是string\x02找不到输入字段\x02输入字段值为null\x02找不到JSONDict键" +
+	"\x02无效的格式"
 
-// Total table size 702 bytes (0KiB); checksum: 7CB08ED6
+	// Total table size 1163 bytes (1KiB); checksum: BC36BE3A

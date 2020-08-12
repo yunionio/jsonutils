@@ -1,0 +1,137 @@
+{
+    "language": "zh-CN",
+    "messages": [
+        {
+            "id": "fail to insert object",
+            "message": "fail to insert object",
+            "translation": "插入JSONObject失败",
+            "position": "errors.go:10:2"
+        },
+        {
+            "id": "not a valid JSONDict",
+            "message": "not a valid JSONDict",
+            "translation": "不是JSONDict",
+            "position": "errors.go:12:2"
+        },
+        {
+            "id": "not a valid JSONArray",
+            "message": "not a valid JSONArray",
+            "translation": "不是JSONArray",
+            "position": "errors.go:13:2"
+        },
+        {
+            "id": "not a valid number",
+            "message": "not a valid number",
+            "translation": "无数的整数",
+            "position": "errors.go:14:2"
+        },
+        {
+            "id": "not a valid float",
+            "message": "not a valid float",
+            "translation": "无数的浮点数",
+            "position": "errors.go:15:2"
+        },
+        {
+            "id": "not a valid boolean",
+            "message": "not a valid boolean",
+            "translation": "无效的布尔值",
+            "position": "errors.go:16:2"
+        },
+        {
+            "id": "not a valid string",
+            "message": "not a valid string",
+            "translation": "无效的字符串",
+            "position": "errors.go:17:2"
+        },
+        {
+            "id": "key not found",
+            "message": "key not found",
+            "translation": "找不到指定键值",
+            "position": "errors.go:19:2"
+        },
+        {
+            "id": "unsupported operation",
+            "message": "unsupported operation",
+            "translation": "不支持的操作",
+            "position": "errors.go:21:2"
+        },
+        {
+            "id": "out of key range",
+            "message": "out of key range",
+            "translation": "找不到指定键序列",
+            "position": "errors.go:22:2"
+        },
+        {
+            "id": "out of index range",
+            "message": "out of index range",
+            "translation": "JSON数组下标越界",
+            "position": "errors.go:23:2"
+        },
+        {
+            "id": "invalid char",
+            "message": "invalid char",
+            "translation": "无数的字符",
+            "position": "errors.go:25:2"
+        },
+        {
+            "id": "invalid hex",
+            "message": "invalid hex",
+            "translation": "无效的16进制串",
+            "position": "errors.go:26:2"
+        },
+        {
+            "id": "invalid 4 byte rune",
+            "message": "invalid 4 byte rune",
+            "translation": "无效的rune",
+            "position": "errors.go:27:2"
+        },
+        {
+            "id": "unmarshal type mismatch",
+            "message": "unmarshal type mismatch",
+            "translation": "unmarshal类型不匹配",
+            "position": "errors.go:29:2"
+        },
+        {
+            "id": "unmarshal array length mismatch",
+            "message": "unmarshal array length mismatch",
+            "translation": "unmarshal时Go数组与JSON array长度不匹配",
+            "position": "errors.go:30:2"
+        },
+        {
+            "id": "do not known how to deserialize json into this interface type",
+            "message": "do not known how to deserialize json into this interface type",
+            "translation": "",
+            "position": "errors.go:31:2"
+        },
+        {
+            "id": "map key must be string",
+            "message": "map key must be string",
+            "translation": "JSON字典的键类型必须是string",
+            "position": "errors.go:32:2"
+        },
+        {
+            "id": "missing input field",
+            "message": "missing input field",
+            "translation": "找不到输入字段",
+            "position": "errors.go:34:2"
+        },
+        {
+            "id": "nil input field",
+            "message": "nil input field",
+            "translation": "输入字段值为null",
+            "position": "errors.go:35:2"
+        },
+        {
+            "id": "Cannot find JSONDict key",
+            "message": "Cannot find JSONDict key",
+            "translation": "找不到JSONDict键",
+            "position": "errors.go:37:2"
+        },
+        {
+            "id": "Illformat",
+            "message": "Illformat",
+            "translation": "无效的格式",
+            "position": "errors.go:38:2"
+        }
+    ]
+}
