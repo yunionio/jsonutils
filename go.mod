@@ -12,5 +12,5 @@ require (
 	golang.org/x/text v0.3.0
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 	yunion.io/x/log v0.0.0-20190514041436-04ce53b17c6b
-	yunion.io/x/pkg v0.0.0-20200708071451-a663dc94e16b
+	yunion.io/x/pkg v0.0.0-20200814072949-4f1b541857d6
 )
