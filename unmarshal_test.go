@@ -512,11 +512,11 @@ type ObsoleteStruct struct {
 	CloudEnv  string `json:"cloud_env"`
 	IsPublic  *bool  `json:"is_public"`
 	Project   string `json:"project"`
-	ProjectId string `json:"project_id" "yunion:deprecated-by":"project"`
-	Tenant    string `json:"tenant" "yunion:deprecated-by":"project_id"`
-	TenantId  string `json:"tenant_id" "yunion:deprecated-by":"tenant"`
-	Loop1     string `json:"loop1" "yunion:deprecated-by":"loop2"`
-	Loop2     string `json:"loop2" "yunion:deprecated-by":"loop1"`
+	ProjectId string `json:"project_id" yunion-deprecated-by:"project"`
+	Tenant    string `json:"tenant" yunion-deprecated-by:"project_id"`
+	TenantId  string `json:"tenant_id" yunion-deprecated-by:"tenant"`
+	Loop1     string `json:"loop1" yunion-deprecated-by:"loop2"`
+	Loop2     string `json:"loop2" yunion-deprecated-by:"loop1"`
 }
 
 func (s *ObsoleteStruct) AfterUnmarshal() {
