@@ -35,7 +35,7 @@ func TestNewDict(t *testing.T) {
 
 func TestNewArray(t *testing.T) {
 	arr := NewArray()
-	arr.Add(NewString("1"), NewInt(1), NewFloat(1.0))
+	arr.Add(NewString("1"), NewInt(1), NewFloat64(1.0))
 	arr2, _ := ParseString("[\"1\", 1, 1.0]")
 	if arr.String() != arr2.String() {
 		t.Errorf("Fail %s != %s", arr, arr2)

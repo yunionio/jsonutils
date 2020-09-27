@@ -44,7 +44,7 @@ func TestIntInterface(t *testing.T) {
 
 func TestFloatInterface(t *testing.T) {
 	oval := 123.223
-	json := NewFloat(float64(oval))
+	json := NewFloat64(float64(oval))
 	val := json.Interface()
 	if val.(float64) != float64(oval) {
 		t.Errorf("should be equal")
