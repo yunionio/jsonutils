@@ -462,7 +462,9 @@ func TestUnmarshalInterface(t *testing.T) {
 		metadata.Add(JSONTrue, "is_student")
 		metadata.Add(NewFloat(1.2), "weight")
 
-		meta := make(map[string]interface{}, 0)
+		type MapKeyType string
+
+		meta := make(map[MapKeyType]interface{}, 0)
 		err := metadata.Unmarshal(meta)
 		if err != nil {
 			t.Fatalf("Get VM Metadata error: %v", err)
