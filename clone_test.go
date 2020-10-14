@@ -34,7 +34,7 @@ func TestDeepCopyBasic(t *testing.T) {
 		},
 		{
 			name: "float",
-			in:   NewFloat(2048.4096),
+			in:   NewFloat64(2048.4096),
 		},
 		{
 			name: "bool true",

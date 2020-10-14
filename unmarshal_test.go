@@ -460,7 +460,7 @@ func TestUnmarshalInterface(t *testing.T) {
 		metadata.Add(NewString("john"), "name")
 		metadata.Add(NewInt(12), "age")
 		metadata.Add(JSONTrue, "is_student")
-		metadata.Add(NewFloat(1.2), "weight")
+		metadata.Add(NewFloat64(1.2), "weight")
 
 		type MapKeyType string
 
