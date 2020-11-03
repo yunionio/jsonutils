@@ -102,3 +102,54 @@ func TestJSONDictRemove(t *testing.T) {
 		t.Fatalf("case insensitive false, want true, got true")
 	}
 }
+
+func TestJSONSpecialChar(t *testing.T) {
+	cases := []struct {
+		in    string
+		equal bool
+	}{
+		{
+			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', '\n'}),
+			equal: true,
+		},
+		{
+			in:    "中文Engilish\bok\n\t",
+			equal: false,
+		},
+		{
+			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 10, 10, 10, 10}),
+			equal: true,
+		},
+		{
+			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 129, 10, 10, 10}),
+			equal: false,
+		},
+		{
+			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 8, 8, 8, 8}),
+			equal: false,
+		},
+		{
+			in:    "中文 空格；符号。 中文：",
+			equal: true,
+		},
+	}
+	for _, c := range cases {
+		v := struct {
+			CommonName string
+		}{
+			CommonName: c.in,
+		}
+		jd := Marshal(v)
+		output := jd.String()
+		t.Logf("output: %s", output)
+		newjd, err := ParseString(output)
+		if err != nil {
+			t.Errorf("ParseString %s fail: %s", output, err)
+		}
+		if newjd.Equals(jd) != c.equal {
+			t.Errorf("newJd %s !=  jd %s", newjd, jd)
+		}
+		newStr, _ := newjd.GetString("common_name")
+		t.Logf("%s %x", newStr, newStr)
+	}
+}

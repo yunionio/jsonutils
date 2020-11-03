@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"yunion.io/x/pkg/errors"
@@ -272,8 +273,8 @@ func quoteString(str string) string {
 	sb := &strings.Builder{}
 	sb.Grow(len(str) + 2)
 	sb.WriteByte('"')
-	for i := 0; i < len(str); i++ {
-		switch c := str[i]; c {
+	for _, c := range str {
+		switch c {
 		case '"':
 			sb.Write([]byte{'\\', '"'})
 		case '\r':
@@ -285,7 +286,22 @@ func quoteString(str string) string {
 		case '\\':
 			sb.Write([]byte{'\\', '\\'})
 		default:
-			sb.WriteByte(c)
+			if unicode.IsGraphic(c) {
+				sb.WriteRune(c)
+			}
+			// otherwise, ignore the character
+			/* else if c <= 0xff {
+				sb.Write([]byte{'\\', 'x'})
+				sb.WriteString(fmt.Sprintf("%02x", c))
+			} else if c <= 0xffff {
+				sb.Write([]byte{'\\', 'u'})
+				sb.WriteString(fmt.Sprintf("%04x", c))
+			} else {
+				sb.Write([]byte{'\\', 'u'})
+				sb.WriteString(fmt.Sprintf("%04x", c>>16))
+				sb.Write([]byte{'\\', 'u'})
+				sb.WriteString(fmt.Sprintf("%04x", (c & 0xffff)))
+			}*/
 		}
 	}
 	sb.WriteByte('"')
