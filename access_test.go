@@ -105,32 +105,25 @@ func TestJSONDictRemove(t *testing.T) {
 
 func TestJSONSpecialChar(t *testing.T) {
 	cases := []struct {
-		in    string
-		equal bool
+		in string
 	}{
 		{
-			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', '\n'}),
-			equal: true,
+			in: string([]byte{'y', 'u', 'n', 'i', 'o', 'n', '\n'}),
 		},
 		{
-			in:    "中文Engilish\bok\n\t",
-			equal: false,
+			in: "中文Engilish\bok\n\t",
 		},
 		{
-			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 10, 10, 10, 10}),
-			equal: true,
+			in: string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 10, 10, 10, 10}),
 		},
 		{
-			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 129, 10, 10, 10}),
-			equal: false,
+			in: string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 129, 10, 10, 10}),
 		},
 		{
-			in:    string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 8, 8, 8, 8}),
-			equal: false,
+			in: string([]byte{'y', 'u', 'n', 'i', 'o', 'n', 8, 8, 8, 8}),
 		},
 		{
-			in:    "中文 空格；符号。 中文：",
-			equal: true,
+			in: "中文 空格；符号。 中文：",
 		},
 	}
 	for _, c := range cases {
@@ -141,12 +134,12 @@ func TestJSONSpecialChar(t *testing.T) {
 		}
 		jd := Marshal(v)
 		output := jd.String()
-		t.Logf("output: %s", output)
+		t.Log("output: ", output)
 		newjd, err := ParseString(output)
 		if err != nil {
 			t.Errorf("ParseString %s fail: %s", output, err)
 		}
-		if newjd.Equals(jd) != c.equal {
+		if !newjd.Equals(jd) {
 			t.Errorf("newJd %s !=  jd %s", newjd, jd)
 		}
 		newStr, _ := newjd.GetString("common_name")
