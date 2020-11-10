@@ -20,6 +20,26 @@ import (
 )
 
 func TestMarshal(t *testing.T) {
+	t.Run("nil", func(t *testing.T) {
+		type I interface{}
+		t.Run("nil-self", func(t *testing.T) {
+			var i I
+			v := Marshal(i)
+			if v != JSONNull {
+				t.Errorf("expect json null, got %s", v)
+			}
+		})
+		t.Run("nil with type", func(t *testing.T) {
+			var i = func() I {
+				var i *int
+				return i
+			}()
+			v := Marshal(i)
+			if v != JSONNull {
+				t.Errorf("expect json null, got %s", v)
+			}
+		})
+	})
 	t.Run("anonymous interface", func(t *testing.T) {
 		type I interface{}
 		type M struct {
