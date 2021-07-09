@@ -654,6 +654,10 @@ func TestUnmarshalString2Int(t *testing.T) {
 			in:   `{"vlan_id":"10,000", "amount":"10,000.00"}`,
 			want: 10000,
 		},
+		{
+			in:   "{\"vlan_id\":3\r}",
+			want: 3,
+		},
 	}
 	for _, c := range cases {
 		json, err := ParseString(c.in)
