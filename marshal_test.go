@@ -17,6 +17,8 @@ package jsonutils
 import (
 	"testing"
 	"time"
+
+	"yunion.io/x/pkg/tristate"
 )
 
 func TestMarshal(t *testing.T) {
@@ -281,5 +283,108 @@ func TestMarshalDeprecatedBy(t *testing.T) {
 	}
 	if s2.Region != s.Cloudregion {
 		t.Errorf("expect s2.Region(%s) == s.Cloudregion(%s)", s2, s)
+	}
+}
+
+func TestMarshalAll(t *testing.T) {
+	cases := []struct {
+		in      interface{}
+		want    string
+		wantAll string
+	}{
+		{
+			in:      true,
+			want:    "true",
+			wantAll: "true",
+		},
+		{
+			in:      tristate.None,
+			want:    "null",
+			wantAll: "null",
+		},
+		{
+			in: struct {
+				Name   string            `json:",omitempty"`
+				Age    int               `json:",omitzero"`
+				Weight float32           `json:",omitzero"`
+				Map    map[string]string `json:",omitempty"`
+				Slice  []string          `json:",omitempty"`
+			}{
+				Name:   "",
+				Age:    0,
+				Weight: 0.0,
+			},
+			want:    "{}",
+			wantAll: `{"age":0,"map":null,"name":"","slice":null,"weight":0}`,
+		},
+		{
+			in: struct {
+				Name   string            `json:",omitempty"`
+				Age    int               `json:",omitzero"`
+				Weight float32           `json:",omitzero"`
+				Map    map[string]string `json:",allowempty"`
+				Slice  []string          `json:",allowempty"`
+			}{
+				Name:   "",
+				Age:    0,
+				Weight: 0.0,
+			},
+			want:    "{}",
+			wantAll: `{"age":0,"map":null,"name":"","slice":null,"weight":0}`,
+		},
+		{
+			in: struct {
+				Name   string            `json:",omitempty"`
+				Age    int               `json:",omitzero"`
+				Weight float32           `json:",omitzero"`
+				Map    map[string]string `json:",omitempty"`
+				Slice  []string          `json:",omitempty"`
+			}{
+				Name:   "",
+				Age:    0,
+				Weight: 0.0,
+				Map:    make(map[string]string),
+				Slice:  make([]string, 0),
+			},
+			want:    "{}",
+			wantAll: `{"age":0,"map":{},"name":"","slice":[],"weight":0}`,
+		},
+		{
+			in: struct {
+				Name   string  `json:",allowempty"`
+				Age    int     `json:",allowzero"`
+				Weight float32 `json:",allowzero"`
+			}{
+				Name:   "",
+				Age:    0,
+				Weight: 0.0,
+			},
+			want:    `{"age":0,"name":"","weight":0}`,
+			wantAll: `{"age":0,"name":"","weight":0}`,
+		},
+		{
+			in: map[string]string{
+				"name": "",
+			},
+			want:    `{"name":""}`,
+			wantAll: `{"name":""}`,
+		},
+		{
+			in: []string{
+				"",
+			},
+			want:    `[""]`,
+			wantAll: `[""]`,
+		},
+	}
+	for _, c := range cases {
+		got := Marshal(c.in)
+		if got.String() != c.want {
+			t.Errorf("want %s got %s", c.want, got)
+		}
+		gotAll := MarshalAll(c.in)
+		if gotAll.String() != c.wantAll {
+			t.Errorf("wantAll %s gotAll %s", c.wantAll, gotAll)
+		}
 	}
 }
