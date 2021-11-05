@@ -34,6 +34,7 @@ type TestStruct struct {
 	Json2  JSONObject
 	Array  []string
 	Tri    tristate.TriState
+	IntPtr *int
 }
 
 func TestJSONDictUnmarshal(t *testing.T) {
@@ -46,6 +47,7 @@ func TestJSONDictUnmarshal(t *testing.T) {
 	json.Add(NewInt(3), "grade")
 	json.Add(NewStringArray([]string{"1", "2", "3"}), "array")
 	json.Add(JSONFalse, "tri")
+	json.Add(JSONNull, "int_ptr")
 	subDict := NewDict()
 	subDict.Add(NewString("value"), "key")
 	subDict.Add(NewString("value2"), "key2")
