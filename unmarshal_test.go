@@ -699,3 +699,35 @@ func TestUnmarshalJSONDictPtr(t *testing.T) {
 		t.Logf("want %s", dest)
 	}
 }
+
+func TestUnmarshalMap(t *testing.T) {
+	cases := []struct {
+		input string
+	}{
+		{
+			input: `{"name":"John"}`,
+		},
+		{
+			input: `{"name":["John"],"gender":["male"]}`,
+		},
+	}
+	for _, c := range cases {
+		json, err := ParseString(c.input)
+		if err != nil {
+			t.Errorf("ParseString err %s", err)
+		} else {
+			map1 := make(map[string]string)
+			map2 := make(map[string][]string)
+			err := json.Unmarshal(&map1)
+			if err != nil {
+				t.Errorf("Unmarshal map[string]string fail %s", err)
+			}
+			err = json.Unmarshal(&map2)
+			if err != nil {
+				t.Errorf("Unmarshal map[string][]string fail %s", err)
+			}
+			t.Logf("map[string]string: %s", Marshal(map1))
+			t.Logf("map[string][]string: %s", Marshal(map2))
+		}
+	}
+}
