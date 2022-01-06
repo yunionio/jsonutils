@@ -43,3 +43,35 @@ func TestJSONFloat_String(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigNull(t *testing.T) {
+	config := NewDict()
+	config.Add(Marshal(nil), "config")
+	t.Logf("config: %s", config.String())
+	conf2, err := ParseString(config.String())
+	if err != nil {
+		t.Fatalf("ParseString error %s", err)
+	}
+	t.Logf("config2: %s", conf2.String())
+	conf := conf2.(*JSONDict)
+	if !conf.Contains("config") {
+		conf.Add(NewDict(), "config")
+	}
+	if !conf.Contains("config", "default") {
+		err = conf.Add(NewDict(), "config", "default")
+		if err != nil {
+			t.Fatalf("add config default fail %s", err)
+		}
+	}
+	syncConf := map[string]string{
+		"api_server": "https://127.0.0.1",
+	}
+	for k, v := range syncConf {
+		if _, ok := conf.GetString("config", "default", k); ok == nil {
+			continue
+		} else {
+			conf.Add(NewString(v), "config", "default", k)
+		}
+	}
+	t.Logf("configs: %s", conf)
+}
