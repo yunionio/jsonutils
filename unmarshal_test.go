@@ -416,10 +416,14 @@ func TestUnmarshalEmbbedPtr(t *testing.T) {
 
 	cases := []struct {
 		in   string
-		want string
+		want *OneStruct
 	}{
-		{`{"levelone:name":"jack", "leveltwo:gender":"male"}`, "jack"},
-		{`{"leveltwo:gender":"male"}`, ""},
+		{
+			`{"levelone:name":"jack", "leveltwo:gender":"male"}`, &OneStruct{"jack"},
+		},
+		{
+			`{"leveltwo:gender":"male"}`, nil,
+		},
 	}
 	for _, c := range cases {
 		json, err := ParseString(c.in)
@@ -431,8 +435,8 @@ func TestUnmarshalEmbbedPtr(t *testing.T) {
 		if err != nil {
 			t.Fatalf("fail to unmarshal %s %s", json.String(), err)
 		}
-		if got.Name != c.want {
-			t.Fatalf("want %s got %s", c.want, got.Name)
+		if !reflect.DeepEqual(got.OneStruct, c.want) {
+			t.Fatalf("want %v got %v", c.want, got.OneStruct)
 		}
 	}
 }
@@ -729,5 +733,41 @@ func TestUnmarshalMap(t *testing.T) {
 			t.Logf("map[string]string: %s", Marshal(map1))
 			t.Logf("map[string][]string: %s", Marshal(map2))
 		}
+	}
+}
+
+func TestEmbededPtrUnmarshal(t *testing.T) {
+	type Embededed struct {
+		TestTest string `json:"test_test"`
+		Field2   string
+	}
+
+	type Embeded struct {
+		*Embededed
+		Test string `json:"test"`
+	}
+	type Struct1 struct {
+		*Embeded
+		Name string `json:"name"`
+	}
+	jsonVal := NewDict()
+	jsonVal.Add(NewString("name1"), "name")
+	s1 := &Struct1{}
+	if err := jsonVal.Unmarshal(s1); err != nil {
+		t.Errorf("unmarshal embeded ptr struct %s", err)
+	}
+	if s1.Embeded != nil {
+		t.Errorf("unmarshal embeded test failed %v", s1)
+	}
+
+	jsonVal.Add(NewString("test1"), "test")
+	jsonVal.Add(NewString("test_test1"), "test_test")
+	jsonVal.Add(NewString("field2"), "field2")
+	s2 := &Struct1{}
+	if err := jsonVal.Unmarshal(s2); err != nil {
+		t.Errorf("unmarshal embeded ptr struct %s", err)
+	}
+	if s2.Test != "test1" || s2.TestTest != "test_test1" || s2.Field2 != "field2" {
+		t.Errorf("unmarshal embeded test failed %v", s2)
 	}
 }
