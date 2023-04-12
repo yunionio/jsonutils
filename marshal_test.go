@@ -304,6 +304,21 @@ func TestMarshalAll(t *testing.T) {
 		},
 		{
 			in: struct {
+				Name   string
+				Age    int
+				Weight float32
+				Map    map[string]string
+				Slice  []string
+			}{
+				Name:   "",
+				Age:    0,
+				Weight: 0.0,
+			},
+			want:    `{"age":0,"weight":0}`,
+			wantAll: `{"age":0,"map":null,"name":"","slice":null,"weight":0}`,
+		},
+		{
+			in: struct {
 				Name   string            `json:",omitempty"`
 				Age    int               `json:",omitzero"`
 				Weight float32           `json:",omitzero"`
@@ -387,4 +402,143 @@ func TestMarshalAll(t *testing.T) {
 			t.Errorf("wantAll %s gotAll %s", c.wantAll, gotAll)
 		}
 	}
+}
+
+type SGuest struct {
+	Id   string
+	Name string
+
+	Networks []*SGuestnetwork
+}
+
+type SNetwork struct {
+	Id      string
+	Name    string
+	IpStart string
+	IpEnd   string
+	MaskLen int
+
+	Guests []*SGuestnetwork
+}
+
+type SGuestnetwork struct {
+	Ip      string
+	Guest   *SGuest
+	Network *SNetwork
+}
+
+type STopo struct {
+	Guests   map[string]*SGuest
+	Networks map[string]*SNetwork
+}
+
+func TestMarshalLoop(t *testing.T) {
+	type SLoopStruct struct {
+		Id     int
+		Name   string
+		Gender *bool
+		Self   *SLoopStruct
+	}
+
+	male := true
+	test := SLoopStruct{
+		Id:     123,
+		Name:   "John",
+		Gender: &male,
+	}
+	test.Self = &test
+
+	test1 := SLoopStruct{
+		Id:     123,
+		Name:   "John",
+		Gender: &male,
+	}
+
+	guest1 := &SGuest{
+		Id:   "guest1",
+		Name: "vm1",
+	}
+	guest2 := &SGuest{
+		Id:   "guest2",
+		Name: "vm2",
+	}
+	net1 := &SNetwork{
+		Id:      "net1",
+		Name:    "vnet1",
+		IpStart: "192.168.222.1",
+		IpEnd:   "192.168.222.255",
+		MaskLen: 24,
+	}
+
+	guest1net := &SGuestnetwork{
+		Ip:      "192.168.222.254",
+		Guest:   guest1,
+		Network: net1,
+	}
+	guest2net := &SGuestnetwork{
+		Ip:      "192.168.222.253",
+		Guest:   guest2,
+		Network: net1,
+	}
+
+	guest1.Networks = []*SGuestnetwork{
+		guest1net,
+	}
+	guest2.Networks = []*SGuestnetwork{
+		guest2net,
+	}
+
+	net1.Guests = []*SGuestnetwork{
+		guest1net,
+		guest2net,
+	}
+
+	topo := &STopo{
+		Guests: map[string]*SGuest{
+			guest1.Id: guest1,
+			guest2.Id: guest2,
+		},
+		Networks: map[string]*SNetwork{
+			net1.Id: net1,
+		},
+	}
+
+	cases := []struct {
+		in  interface{}
+		out interface{}
+	}{
+		{
+			in:  &test,
+			out: &SLoopStruct{},
+		},
+		{
+			in:  &test1,
+			out: &SLoopStruct{},
+		},
+		{
+			in:  topo,
+			out: &STopo{},
+		},
+	}
+	for _, c := range cases {
+		got := Marshal(c.in).String()
+		t.Logf("marshal got: %s", got)
+
+		json, err := ParseString(got)
+		if err != nil {
+			t.Errorf("parse json fail %s", err)
+		} else {
+			t.Logf("json: %s", json.String())
+			err := json.Unmarshal(c.out)
+			if err != nil {
+				t.Errorf("unmarshal %s", err)
+			} else {
+				got2 := Marshal(c.out).String()
+				if got2 != got {
+					t.Errorf("got: %s != got2: %s", got, got2)
+				}
+			}
+		}
+	}
+
 }
