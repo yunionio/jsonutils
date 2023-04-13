@@ -59,7 +59,7 @@ func (s *sJsonMarshalSession) addPointerReferer(ptr *sJSONPointer) {
 
 func (s *sJsonMarshalSession) setAllNodeId() {
 	for nodeId, refer := range s.nodeMap {
-		if refer.refCnt > 1 {
+		if refer.node != nil && refer.refCnt > 1 {
 			refer.node.setNodeId(nodeId)
 		}
 	}

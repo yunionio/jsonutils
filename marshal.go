@@ -271,11 +271,13 @@ func (s *sJsonMarshalSession) marshalValueWithObjectMap(objValue reflect.Value, 
 	var jsonPtr *sJSONPointer
 	if objValue.Kind() == reflect.Ptr {
 		inf := objValue.Interface()
-		if jsonPtr, ok := s.objectMap[inf]; ok {
-			s.addPointerReferer(jsonPtr)
-			return jsonPtr
+		if !gotypes.IsNil(inf) {
+			if jsonPtr, ok := s.objectMap[inf]; ok {
+				s.addPointerReferer(jsonPtr)
+				return jsonPtr
+			}
+			jsonPtr = s.newJsonPointer(inf)
 		}
-		jsonPtr = s.newJsonPointer(inf)
 	}
 	jsonObj := s._marshalValue(objValue, info, omitEmpty)
 	if jsonPtr != nil && jsonObj != nil {
