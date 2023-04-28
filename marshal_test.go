@@ -454,6 +454,28 @@ func TestMarshalLoop(t *testing.T) {
 		Gender: &male,
 	}
 
+	test2 := SLoopStruct{
+		Id:   2222,
+		Name: "John2",
+	}
+	test3 := SLoopStruct{
+		Id:   3333,
+		Name: "John3",
+	}
+	test4 := SLoopStruct{
+		Id:   4444,
+		Name: "John4",
+	}
+	test2.Self = &test3
+	test3.Self = &test4
+	test4.Self = &test2
+
+	loops := []*SLoopStruct{
+		&test2,
+		&test3,
+		&test4,
+	}
+
 	guest1 := &SGuest{
 		Id:   "guest1",
 		Name: "vm1",
@@ -503,6 +525,26 @@ func TestMarshalLoop(t *testing.T) {
 		},
 	}
 
+	type SCdrom struct {
+		Path    string
+		ImageId string
+	}
+
+	type SDesc struct {
+		Cdrom  *SCdrom
+		Cdroms []*SCdrom
+	}
+
+	cdrom := &SCdrom{
+		Path:    "rbd.cloudpods-test/image_caches_ba19c4fd-cb44-4ff0-8724-98a1e8bfb7e7",
+		ImageId: "ba19c4fd-cb44-4ff0-8724-98a1e8bfb7e7",
+	}
+
+	desc := &SDesc{
+		Cdrom:  cdrom,
+		Cdroms: []*SCdrom{cdrom},
+	}
+
 	cases := []struct {
 		in  interface{}
 		out interface{}
@@ -516,8 +558,16 @@ func TestMarshalLoop(t *testing.T) {
 			out: &SLoopStruct{},
 		},
 		{
+			in:  &loops,
+			out: &[]*SLoopStruct{},
+		},
+		{
 			in:  topo,
 			out: &STopo{},
+		},
+		{
+			in:  desc,
+			out: &SDesc{},
 		},
 	}
 	for _, c := range cases {
@@ -541,4 +591,45 @@ func TestMarshalLoop(t *testing.T) {
 		}
 	}
 
+}
+
+func TestMarshalPointer(t *testing.T) {
+	type SCdrom struct {
+		Path    string
+		ImageId string
+	}
+
+	type SDesc struct {
+		Cdrom  *SCdrom
+		Cdroms []*SCdrom
+	}
+
+	type SDescHost struct {
+		Cdroms []*SCdrom
+	}
+
+	cdrom := &SCdrom{
+		Path:    "rbd.cloudpods-test/image_caches_ba19c4fd-cb44-4ff0-8724-98a1e8bfb7e7",
+		ImageId: "ba19c4fd-cb44-4ff0-8724-98a1e8bfb7e7",
+	}
+
+	desc := &SDesc{
+		Cdrom:  cdrom,
+		Cdroms: []*SCdrom{cdrom},
+	}
+
+	got := Marshal(desc).String()
+	t.Logf("got: %s", got)
+	json, err := ParseString(got)
+	if err != nil {
+		t.Errorf("ParseString error %s", err)
+	} else {
+		newdesc := &SDescHost{}
+		err := json.Unmarshal(newdesc)
+		if err != nil {
+			t.Errorf("Unmarshal error %s", err)
+		} else if Marshal(desc.Cdroms[0]).String() != Marshal(newdesc.Cdroms[0]).String() {
+			t.Errorf("%s != %s", Marshal(desc.Cdroms[0]).String(), Marshal(newdesc.Cdroms[0]).String())
+		}
+	}
 }
