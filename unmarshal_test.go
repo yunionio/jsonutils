@@ -175,17 +175,32 @@ func TestUnmarshalTime(t *testing.T) {
 	type TimeStruct struct {
 		EndTime time.Time
 	}
-	jsonDict := NewDict()
-	jsonDict.Add(NewString(""), "end_time")
-	t.Logf("json: %s", jsonDict.String())
-	ts := TimeStruct{}
-	err := jsonDict.Unmarshal(&ts)
-	if err != nil {
-		t.Errorf("unmarshal timestruct error %s", err)
-	} else if !ts.EndTime.IsZero() {
-		t.Fatalf("unmarshal empty time should zero")
-	} else {
-		t.Logf("unmarshal result %s", ts)
+	cases := []struct {
+		timeStr string
+		zero    bool
+	}{
+		{
+			timeStr: "",
+			zero:    true,
+		},
+		{
+			timeStr: "2023-03-23 12:02:19.206",
+			zero:    false,
+		},
+	}
+	for _, c := range cases {
+		jsonDict := NewDict()
+		jsonDict.Add(NewString(c.timeStr), "end_time")
+		t.Logf("json: %s", jsonDict.String())
+		ts := TimeStruct{}
+		err := jsonDict.Unmarshal(&ts)
+		if err != nil {
+			t.Errorf("unmarshal timestruct error %s", err)
+		} else if c.zero != ts.EndTime.IsZero() {
+			t.Fatalf("zero expect %v got %v", c.zero, ts.EndTime.IsZero())
+		} else {
+			t.Logf("unmarshal result %s", ts)
+		}
 	}
 }
 
