@@ -24,7 +24,7 @@ jobs:
           set -o xtrace
           workdir="$HOME/go/src/yunion.io/x"
           mkdir -p "$workdir"
-          mv "$HOME/work/pkg/jsonutils" "$workdir/"
+          mv "$HOME/work/jsonutils/jsonutils" "$workdir/"
 
           export GOPATH="$HOME/go"
           cd "$workdir/jsonutils"
