@@ -531,6 +531,64 @@ func TestUnmarshalString2Array(t *testing.T) {
 	t.Logf("%s", s)
 }
 
+func TestUnmarshalStruictArray(t *testing.T) {
+	type sStruct struct {
+		Provider []string `json:"provider"`
+	}
+	cases := []struct {
+		input     sStruct
+		providers []string
+		want      sStruct
+	}{
+		{
+			input: sStruct{
+				Provider: []string{
+					"Aliyun", "Qcloud",
+				},
+			},
+			providers: []string{"Aws"},
+			want: sStruct{
+				Provider: []string{
+					"Aws",
+				},
+			},
+		},
+		{
+			input: sStruct{
+				Provider: []string{
+					"Aliyun", "Qcloud",
+				},
+			},
+			providers: []string{},
+			want: sStruct{
+				Provider: []string{},
+			},
+		},
+		{
+			input: sStruct{
+				Provider: []string{
+					"Aliyun", "Qcloud",
+				},
+			},
+			providers: nil,
+			want: sStruct{
+				Provider: []string{},
+			},
+		},
+	}
+	for _, c := range cases {
+		json := NewDict()
+		json.Add(NewStringArray(c.providers), "provider")
+
+		err := json.Unmarshal(&c.input)
+		if err != nil {
+			t.Errorf("TestUnmarshalStruictArray Unmarshal fail %s", err)
+		} else if !reflect.DeepEqual(c.want, c.input) {
+			t.Errorf("TestUnmarshalStruictArray want %#v got %#v", c.want, c.input)
+		}
+	}
+}
+
 type ObsoleteStruct struct {
 	CloudEnv  string `json:"cloud_env"`
 	IsPublic  *bool  `json:"is_public"`

@@ -15,6 +15,7 @@
 package jsonutils
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -630,6 +631,70 @@ func TestMarshalPointer(t *testing.T) {
 			t.Errorf("Unmarshal error %s", err)
 		} else if Marshal(desc.Cdroms[0]).String() != Marshal(newdesc.Cdroms[0]).String() {
 			t.Errorf("%s != %s", Marshal(desc.Cdroms[0]).String(), Marshal(newdesc.Cdroms[0]).String())
+		}
+	}
+}
+
+func TestMarshalAllowEmpty(t *testing.T) {
+	type arrayStruct struct {
+		OrgNodeId []string          `json:"org_node_id,allowempty"`
+		OrgNodes  map[string]string `json:"org_nodes,allowempty"`
+	}
+	input := arrayStruct{
+		OrgNodeId: make([]string, 0),
+		OrgNodes:  make(map[string]string),
+	}
+	jsonStr := Marshal(input).String()
+	wantJsonStr := `{"org_node_id":[],"org_nodes":{}}`
+	if jsonStr != wantJsonStr {
+		t.Errorf("marshal want %s got %s", wantJsonStr, jsonStr)
+	} else {
+		json, err := ParseString(jsonStr)
+		if err != nil {
+			t.Errorf("parsestring fail %s", err)
+		} else {
+			t.Logf("parstring output JSON: %s", json.String())
+			val := arrayStruct{}
+			err := json.Unmarshal(&val)
+			if err != nil {
+				t.Errorf("Unmarshal fail %s", err)
+			} else {
+				if !reflect.DeepEqual(val, input) {
+					t.Errorf("want %s got %s", Marshal(input), Marshal(val))
+				}
+			}
+		}
+	}
+}
+
+func TestMarshalOmitEmpty(t *testing.T) {
+	type arrayStruct struct {
+		OrgNodeId []string          `json:"org_node_id,omitempty"`
+		OrgNodes  map[string]string `json:"org_nodes,omitempty"`
+	}
+	input := arrayStruct{
+		OrgNodeId: make([]string, 0),
+		OrgNodes:  make(map[string]string),
+	}
+	jsonStr := Marshal(input).String()
+	wantJsonStr := `{}`
+	if jsonStr != wantJsonStr {
+		t.Errorf("marshal want %s got %s", wantJsonStr, jsonStr)
+	} else {
+		json, err := ParseString(jsonStr)
+		if err != nil {
+			t.Errorf("parsestring fail %s", err)
+		} else {
+			t.Logf("parstring output JSON: %s", json.String())
+			val := arrayStruct{}
+			err := json.Unmarshal(&val)
+			if err != nil {
+				t.Errorf("Unmarshal fail %s", err)
+			} else {
+				if Marshal(input).String() != Marshal(val).String() {
+					t.Errorf("want %s got %s", Marshal(input), Marshal(val))
+				}
+			}
 		}
 	}
 }
