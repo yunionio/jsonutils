@@ -15,6 +15,7 @@
 package jsonutils
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"testing"
@@ -842,5 +843,81 @@ func TestEmbededPtrUnmarshal(t *testing.T) {
 	}
 	if s2.Test != "test1" || s2.TestTest != "test_test1" || s2.Field2 != "field2" {
 		t.Errorf("unmarshal embeded test failed %v", s2)
+	}
+}
+
+func TestUnmarshalMapJson(t *testing.T) {
+	input := `{"account":"政务云区","account_id":"a0e14bd8-f363-4ba3-8333-c76941d16ad8","cpu":8,"created_at":"2023-08-15T10:45:00.000000Z","external_id":"i-5by01jo2172a3uwc0y0r","gpu_count":"1","gpu_model":"Tesla T4","hypervisor":"apsara","instance_type":"ecs.gn6i-c8g1.2xlarge","manager":"政务云区","manager_id":"04f4d4b3-4043-40c7-8aa2-aa0b069d5e6d","mem":31744,"region":"Aliyun Apsara cn-zjls-lszwy-d01","region_id":"8edb9255-a96b-492b-8e16-9b9daf3c0e13","zone":"Aliyun Apsara a","zone_id":"3d5757a9-d56c-4acb-80e5-c30416e3b1ec"}`
+
+	jsonInput, err := ParseString(input)
+	if err != nil {
+		t.Errorf("ParseString %s", err)
+		return
+	}
+
+	t.Logf("input: %s", jsonInput.String())
+
+	mapInput := make(map[string]JSONObject)
+
+	err = jsonInput.Unmarshal(mapInput)
+	if err != nil {
+		t.Errorf("Unmarshal error %s", err)
+		return
+	}
+
+	t.Logf("mapInput: %s", Marshal(mapInput).String())
+}
+
+func TestStringPointer(t *testing.T) {
+	tempId := "abcedf"
+	backId := ""
+	type pointerStruct struct {
+		TemplateId *string `json:"template_id,allowempty"`
+		BackupId   *string `json:"backup_id,allowempty"`
+		SnapshotId *string `json:"snapshot_id,allowempty"`
+	}
+	a := pointerStruct{
+		TemplateId: &tempId,
+		BackupId:   &backId,
+	}
+	t.Logf("a: %s", Marshal(a))
+
+	b := pointerStruct{}
+	err := Marshal(a).Unmarshal(&b)
+	if err != nil {
+		t.Errorf("unmarshal fail %s", err)
+	} else {
+		t.Logf("b: %s", Marshal(b))
+	}
+}
+
+func TestBinary(t *testing.T) {
+	type binaryStruct struct {
+		Binary string `json:"binary"`
+	}
+	o := binaryStruct{
+		Binary: string([]byte{
+			0xff,
+			0x00,
+			0xff,
+			0x00,
+			0xfe,
+			0xa,
+			0xb,
+			0xc,
+			0x00,
+		}),
+	}
+	n := binaryStruct{}
+
+	err := Marshal(o).Unmarshal(&n)
+	if err != nil {
+		t.Errorf("unmarshal fail %s", err)
+	} else {
+		if bytes.Equal([]byte(o.Binary), []byte(n.Binary)) {
+			t.Log("success")
+		} else {
+			t.Errorf("binary not match!")
+		}
 	}
 }
