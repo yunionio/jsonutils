@@ -190,3 +190,56 @@ func TestParseParams(t *testing.T) {
 		t.Fatalf("%s!=%s", str, json.String())
 	}
 }
+
+func TestParseJsonStreams(t *testing.T) {
+	cases := []struct {
+		jsonStr []byte
+		jsonLen int
+	}{
+		{
+			jsonStr: []byte(`{"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"} {"abc": 12}`),
+			jsonLen: 2,
+		},
+		{
+			jsonStr: []byte(`    {"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"} {"abc": 12}         `),
+			jsonLen: 2,
+		},
+		{
+			jsonStr: []byte(`    {"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"} [] {"abc": 12}         `),
+			jsonLen: 3,
+		},
+		{
+			jsonStr: []byte(`    {"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"} [] {"abc": 12}     {}   [] `),
+			jsonLen: 5,
+		},
+		{
+			jsonStr: []byte(`  abc  {"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"} [] {"abc": 12}     {}   [] `),
+			jsonLen: 5,
+		},
+		{
+			jsonStr: []byte(`  abc ["abc"]  {"abc": 12,
+			 "def": [1,2,"123",4.43], "ghi": "hahahah"}
+			 [
+			 ] {"abc": 12}
+			   {}   [] `),
+			jsonLen: 6,
+		},
+		{
+			jsonStr: []byte(`  abc  [{"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"} ["abc"] {"abc": 12}     {}   [] `),
+			jsonLen: 5,
+		},
+		{
+			jsonStr: []byte(`  abc   {"abc": 12, "def": [1,2,"123",4.43], "ghi": "hahahah"} ["abc"] {"abc": 12}     {}   [] `),
+			jsonLen: 5,
+		},
+	}
+	for _, c := range cases {
+		results, err := ParseJsonStreams(c.jsonStr)
+		if err != nil {
+			t.Errorf("%s", err)
+		} else if len(results) != c.jsonLen {
+			t.Errorf("got %d != expect %d", len(results), c.jsonLen)
+		}
+		t.Logf("%s", Marshal(results))
+	}
+}
