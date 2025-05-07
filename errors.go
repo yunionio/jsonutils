@@ -49,6 +49,9 @@ func (e *JSONError) Error() string {
 }
 
 func NewJSONError(str []byte, pos int, msg string) *JSONError {
+	if len(str) == 0 {
+		return &JSONError{pos: 0, substr: "", msg: msg}
+	}
 	if pos < 0 {
 		pos = 0
 	} else if pos > len(str)-1 {
