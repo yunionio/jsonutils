@@ -49,6 +49,23 @@ func TestNewJSONError(t *testing.T) {
 			str: []byte(`{"a":1,"b":2}`),
 			pos: 30,
 		},
+		{
+			str: []byte(``),
+			pos: 0,
+		},
+		{
+			str: []byte(``),
+			pos: 1,
+		},
+
+		{
+			str: []byte(` `),
+			pos: 1,
+		},
+		{
+			str: []byte(` `),
+			pos: 2,
+		},
 	}
 	for _, c := range cases {
 		err := NewJSONError(c.str, c.pos, "expected a number")
