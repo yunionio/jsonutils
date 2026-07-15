@@ -15,6 +15,8 @@
 package jsonutils
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -108,6 +110,51 @@ func TestJSONParse(t *testing.T) {
 		if got.String() != got2.String() {
 			t.Errorf("JSONParse: %s(%s) != %s(%s)", c.in, got, c.out, got2)
 		}
+	}
+}
+
+func TestQuoteStringControlChars(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{name: "nul", in: "a\u0000b", want: `"a\u0000b"`},
+		{name: "soh", in: "x\u0001y", want: `"x\u0001y"`},
+		{name: "mixed_newline", in: "a\nb\u0000c", want: `"a\nb\u0000c"`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := quoteString(c.in)
+			if got != c.want {
+				t.Fatalf("quoteString(%q) = %s, want %s", c.in, got, c.want)
+			}
+			if !json.Valid([]byte(got)) {
+				t.Fatalf("quoteString(%q) produced invalid JSON: %s", c.in, got)
+			}
+			if strings.Contains(got, "\x00") {
+				t.Fatalf("quoteString(%q) still contains raw NUL: %q", c.in, got)
+			}
+		})
+	}
+}
+
+func TestJSONStringControlCharRoundTrip(t *testing.T) {
+	src := "tool\u0000result\u0001ok\nnext"
+	wired := NewString(src).String()
+	if !json.Valid([]byte(wired)) {
+		t.Fatalf("NewString.String() invalid JSON: %s", wired)
+	}
+	parsed, err := ParseString(wired)
+	if err != nil {
+		t.Fatalf("ParseString: %v", err)
+	}
+	var out string
+	if err := json.Unmarshal([]byte(parsed.String()), &out); err != nil {
+		t.Fatalf("json.Unmarshal after String(): %v (body=%s)", err, parsed.String())
+	}
+	if out != src {
+		t.Fatalf("round-trip mismatch: got %q want %q", out, src)
 	}
 }
 
