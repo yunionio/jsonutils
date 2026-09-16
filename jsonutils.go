@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf16"
 	"unicode/utf8"
 
 	"yunion.io/x/log"
@@ -190,9 +191,22 @@ ret:
 					if e != nil {
 						return "", i, NewJSONError(str, i, e.Error())
 					}
+					i += 4
+					if utf16.IsSurrogate(r) {
+						// a character outside the BMP is written as a
+						// surrogate pair, e.g. 😀
+						if i+6 <= len(str) && str[i] == '\\' && str[i+1] == 'u' {
+							r2, e2 := hexstr2rune(str[i+2 : i+6])
+							if e2 == nil {
+								if combined := utf16.DecodeRune(r, r2); combined != utf8.RuneError {
+									r = combined
+									i += 6
+								}
+							}
+						}
+					}
 					runen = utf8.EncodeRune(runebytes, r)
 					buffer = append(buffer, runebytes[0:runen]...)
-					i += 4
 				case 'x':
 					i++
 					if i+2 >= len(str) {
@@ -644,9 +658,8 @@ func (this *JSONDict) prettyString(level int) string {
 		buffer.WriteByte('\n')
 		buffer.WriteString(tab)
 		buffer.WriteString("  ")
-		buffer.WriteByte('"')
-		buffer.WriteString(k)
-		buffer.WriteString("\":")
+		buffer.WriteString(quoteString(k))
+		buffer.WriteByte(':')
 		if gotypes.IsNil(v) {
 			buffer.WriteByte(' ')
 			buffer.WriteString("null")
