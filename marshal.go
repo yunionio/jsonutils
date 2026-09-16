@@ -181,6 +181,9 @@ func marshalFloat64(val float64, info *reflectutils.SStructFieldInfo, bit int, o
 		return nil
 	} else if info != nil && info.ForceString {
 		return NewString(fmt.Sprintf("%f", val))
+	} else if !isFiniteFloat(val) {
+		// nan and +-inf have no json representation
+		return JSONNull
 	} else {
 		return NewFloat64(val)
 	}
@@ -191,6 +194,9 @@ func marshalFloat32(val float32, info *reflectutils.SStructFieldInfo, bit int, o
 		return nil
 	} else if info != nil && info.ForceString {
 		return NewString(fmt.Sprintf("%f", val))
+	} else if !isFiniteFloat(float64(val)) {
+		// nan and +-inf have no json representation
+		return JSONNull
 	} else {
 		return NewFloat32(val)
 	}

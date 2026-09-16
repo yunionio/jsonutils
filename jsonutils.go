@@ -16,6 +16,7 @@ package jsonutils
 
 import (
 	"bytes"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -115,6 +116,11 @@ func skipEmpty(str []byte, offset int) int {
 		}
 	}
 	return i
+}
+
+// isFiniteFloat reports whether the value has a json representation
+func isFiniteFloat(val float64) bool {
+	return !math.IsNaN(val) && !math.IsInf(val, 0)
 }
 
 func hexchar2num(v byte) (byte, error) {
@@ -288,9 +294,10 @@ func (s *sJsonParseSession) parseJSONValue(str []byte, offset int) (JSONObject, 
 			return &JSONInt{data: ival}, i, nil
 		}
 		fval, err := strconv.ParseFloat(val, 64)
-		if err == nil {
+		if err == nil && isFiniteFloat(fval) {
 			return &JSONFloat{data: fval}, i, nil
 		}
+		// nan and +-inf have no json representation, keep them as strings
 		return &JSONString{data: val}, i, nil
 	}
 }
