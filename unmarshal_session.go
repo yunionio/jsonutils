@@ -16,6 +16,7 @@ package jsonutils
 
 import (
 	"reflect"
+	"sort"
 
 	"yunion.io/x/pkg/errors"
 )
@@ -65,6 +66,22 @@ func (s *sJsonUnmarshalSession) saveNodeValue(nodeId int, val reflect.Value) err
 		nv.targetValues = nil
 	}
 	return nil
+}
+
+// checkUnboundNodes reports the node ids that were referred to but never
+// resolved, which would otherwise leave the referring field untouched
+func (s *sJsonUnmarshalSession) checkUnboundNodes() error {
+	ids := make([]int, 0)
+	for nodeId, nv := range s.objectMap {
+		if !nv.nodeValueSet {
+			ids = append(ids, nodeId)
+		}
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	sort.Ints(ids)
+	return errors.Wrapf(ErrNodeNotFound, "node ids %v", ids)
 }
 
 func (s *sJsonUnmarshalSession) setPointerValue(nodeId int, val reflect.Value) error {
