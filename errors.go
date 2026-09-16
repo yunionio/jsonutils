@@ -26,9 +26,10 @@ const (
 	ErrInvalidHex  = errors.Error("invalid hex")
 	ErrInvalidRune = errors.Error("invalid 4 byte rune")
 
-	ErrInvalidNodeId   = errors.Error("invalid node id")
-	ErrDuplicateNodeId = errors.Error("duplicate node id")
-	ErrNestedTooDeep   = errors.Error("json nested too deep")
+	ErrInvalidNodeId         = errors.Error("invalid node id")
+	ErrDuplicateNodeId       = errors.Error("duplicate node id")
+	ErrNestedTooDeep         = errors.Error("json nested too deep")
+	ErrNodeReferenceDisabled = errors.Error("node reference is not enabled, see ParseTrusted")
 
 	ErrTypeMismatch         = errors.Error("unmarshal type mismatch")
 	ErrArrayLengthMismatch  = errors.Error("unmarshal array length mismatch")

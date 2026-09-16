@@ -274,6 +274,16 @@ ret2:
 	return string(str[offset:i]), false, i, nil
 }
 
+// isNodeReference reports whether the token has the form of a node
+// reference, that is a bare <N> with an integer N
+func isNodeReference(val string) bool {
+	if len(val) < 3 || val[0] != '<' || val[len(val)-1] != '>' {
+		return false
+	}
+	_, err := strconv.ParseInt(val[1:len(val)-1], 10, 64)
+	return err == nil
+}
+
 func (s *sJsonParseSession) parseJSONValue(str []byte, offset int) (JSONObject, int, error) {
 	val, quote, i, e := parseString(str, offset)
 	if e != nil {
@@ -293,6 +303,10 @@ func (s *sJsonParseSession) parseJSONValue(str []byte, offset int) (JSONObject, 
 		}
 		s.saveReferer(nodeId, ptr)
 		return ptr, i, nil
+	} else if !s.allowNodeReference && isNodeReference(val) {
+		// a node reference can not be left unresolved and kept as a plain
+		// value: a caller could not tell it apart from a real string
+		return nil, i, errors.Wrap(ErrNodeReferenceDisabled, val)
 	} else {
 		lval := strings.ToLower(val)
 		if len(lval) == 0 || lval == "null" || lval == "none" {
