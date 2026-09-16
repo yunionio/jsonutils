@@ -476,7 +476,10 @@ func (this *JSONArray) _unmarshalValue(s *sJsonUnmarshalSession, val reflect.Val
 
 func (this *JSONDict) unmarshalValue(s *sJsonUnmarshalSession, val reflect.Value) error {
 	if this.nodeId > 0 && val.CanAddr() {
-		s.saveNodeValue(this.nodeId, val.Addr())
+		err := s.saveNodeValue(this.nodeId, val.Addr())
+		if err != nil {
+			return errors.Wrap(err, "saveNodeValue")
+		}
 	}
 	return tryStdUnmarshal(s, this, val, this._unmarshalValue)
 }
