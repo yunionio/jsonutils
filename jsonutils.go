@@ -365,12 +365,33 @@ func escapeJsonChar(sb *strings.Builder, ch byte) {
 	}
 }
 
+// escapeJsonByte writes a byte that is not part of a valid utf-8 sequence
+// as a \xXX escape, which parseQuoteString reads back unchanged
+func escapeJsonByte(sb *strings.Builder, ch byte) {
+	const hexdigits = "0123456789abcdef"
+	sb.Write([]byte{'\\', 'x', hexdigits[ch>>4], hexdigits[ch&0xf]})
+}
+
 func quoteString(str string) string {
 	sb := &strings.Builder{}
 	sb.Grow(len(str) + 2)
 	sb.WriteByte('"')
-	for i := 0; i < len(str); i += 1 {
-		escapeJsonChar(sb, str[i])
+	for i := 0; i < len(str); {
+		ch := str[i]
+		if ch < utf8.RuneSelf {
+			escapeJsonChar(sb, ch)
+			i++
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(str[i:])
+		if r == utf8.RuneError && size <= 1 {
+			// keep a non utf-8 byte reversible instead of writing it out
+			escapeJsonByte(sb, ch)
+			i++
+			continue
+		}
+		sb.WriteString(str[i : i+size])
+		i += size
 	}
 	sb.WriteByte('"')
 	return sb.String()
