@@ -4,9 +4,9 @@ go 1.18
 
 require (
 	github.com/ghodss/yaml v1.0.0
-	golang.org/x/text v0.3.6
-	yunion.io/x/log v1.0.1-0.20230411060016-feb3f46ab361
-	yunion.io/x/pkg v1.0.1-0.20230613081559-f38e2cb344b4
+	golang.org/x/text v0.3.7
+	yunion.io/x/log v1.0.1-0.20240305175729-7cf2d6cd5a91
+	yunion.io/x/pkg v1.10.4-0.20260916163305-b7743fa5e758
 )
 
 require (
