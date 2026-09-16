@@ -34,6 +34,7 @@ const (
 	ErrArrayLengthMismatch  = errors.Error("unmarshal array length mismatch")
 	ErrInterfaceUnsupported = errors.Error("do not known how to deserialize json into this interface type")
 	ErrMapKeyMustString     = errors.Error("map key must be string")
+	ErrNodeNotFound         = errors.Error("no node found for the reference")
 
 	ErrMissingInputField = errors.Error("missing input field")
 	ErrNilInputField     = errors.Error("nil input field")
