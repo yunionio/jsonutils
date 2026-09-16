@@ -259,7 +259,7 @@ func (s *sJsonParseSession) parseJSONValue(str []byte, offset int) (JSONObject, 
 		return nil, i, errors.Wrap(e, "parseString")
 	} else if quote {
 		return &JSONString{data: val}, i, nil
-	} else if val[0] == '<' && val[len(val)-1] == '>' {
+	} else if s.allowNodeReference && len(val) > 1 && val[0] == '<' && val[len(val)-1] == '>' {
 		// Pointer <nnnn>
 		val = val[1 : len(val)-1]
 		ival, err := strconv.ParseInt(val, 10, 64)
@@ -474,9 +474,13 @@ func (s *sJsonParseSession) parseDict(str []byte, offset int) (sortedmap.SSorted
 		if e != nil {
 			return smap, i, nodeId, errors.Wrap(e, "parse misc")
 		}
-		if key == jsonPointerKey {
+		if s.allowNodeReference && key == jsonPointerKey {
 			// node id
-			nodeId = int(val.(*JSONInt).data)
+			jval, ok := val.(*JSONInt)
+			if !ok {
+				return smap, i, nodeId, errors.Wrap(ErrInvalidJsonInt, "invalid node id")
+			}
+			nodeId = int(jval.data)
 		} else {
 			smap = sortedmap.Add(smap, key, val)
 		}
@@ -658,8 +662,36 @@ func Parse(str []byte) (JSONObject, error) {
 	return json, err
 }
 
+// ParseStream parses one value starting at offset, it returns the value and
+// the offset just after it, so that a stream of concatenated values can be
+// walked.  Node references are not resolved, see ParseTrusted.
 func ParseStream(str []byte, offset int) (JSONObject, int, error) {
-	s := newJsonParseSession()
+	return parseStream(str, offset, false)
+}
+
+// ParseTrusted parses a document from a trusted source, resolving the node
+// references that Marshal writes for a cyclic object: the ___jnid_ key inside
+// an object and a bare <N> value referring to it.
+//
+// A document from an untrusted source must be parsed with Parse instead.  A
+// resolved reference makes two fields of the target struct point at the same
+// object, which is what the round trip of a cyclic object needs, but it also
+// lets a forged document do the same.
+//
+// Note that Marshal needs this syntax to terminate on a cyclic object, so it
+// keeps writing it either way.
+func ParseTrusted(str []byte) (JSONObject, error) {
+	json, _, err := parseStream(str, 0, true)
+	return json, err
+}
+
+// ParseTrustedString is ParseTrusted for a string
+func ParseTrustedString(str string) (JSONObject, error) {
+	return ParseTrusted([]byte(str))
+}
+
+func parseStream(str []byte, offset int, allowNodeReference bool) (JSONObject, int, error) {
+	s := newJsonParseSession(allowNodeReference)
 	i := offset
 	i = skipEmpty(str, i)
 	var val JSONObject = nil

@@ -575,7 +575,9 @@ func TestMarshalLoop(t *testing.T) {
 		got := Marshal(c.in).String()
 		t.Logf("marshal got: %s", got)
 
-		json, err := ParseString(got)
+		// the cases below carry cyclic object graphs, reading them back
+		// needs the node references to be resolved
+		json, err := ParseTrustedString(got)
 		if err != nil {
 			t.Errorf("parse json fail %s", err)
 		} else {

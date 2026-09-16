@@ -25,11 +25,16 @@ type sNodeReferer struct {
 
 type sJsonParseSession struct {
 	objectMap map[int]*sNodeReferer
+
+	// allowNodeReference tells whether the ___jnid_ key and a bare <N>
+	// value are read as node references, see ParseTrusted
+	allowNodeReference bool
 }
 
-func newJsonParseSession() *sJsonParseSession {
+func newJsonParseSession(allowNodeReference bool) *sJsonParseSession {
 	return &sJsonParseSession{
-		objectMap: make(map[int]*sNodeReferer),
+		objectMap:          make(map[int]*sNodeReferer),
+		allowNodeReference: allowNodeReference,
 	}
 }
 
