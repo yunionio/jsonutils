@@ -15,7 +15,7 @@
 package jsonutils
 
 import (
-	"fmt"
+	"yunion.io/x/pkg/errors"
 )
 
 type sNodeReferer struct {
@@ -25,6 +25,9 @@ type sNodeReferer struct {
 
 type sJsonParseSession struct {
 	objectMap map[int]*sNodeReferer
+
+	// depth is the current nesting level of the object/array being parsed
+	depth int
 
 	// allowNodeReference tells whether the ___jnid_ key and a bare <N>
 	// value are read as node references, see ParseTrusted
@@ -38,6 +41,20 @@ func newJsonParseSession(allowNodeReference bool) *sJsonParseSession {
 	}
 }
 
+// enter records entering one more nesting level, it fails if the nesting
+// level exceeds maxParseDepth
+func (s *sJsonParseSession) enter() error {
+	if s.depth >= maxParseDepth {
+		return ErrNestedTooDeep
+	}
+	s.depth++
+	return nil
+}
+
+func (s *sJsonParseSession) leave() {
+	s.depth--
+}
+
 func (s *sJsonParseSession) saveReferer(nodeId int, ptr *sJSONPointer) {
 	if nr, ok := s.objectMap[nodeId]; ok {
 		nr.pointers = append(nr.pointers, ptr)
@@ -48,10 +65,10 @@ func (s *sJsonParseSession) saveReferer(nodeId int, ptr *sJSONPointer) {
 	}
 }
 
-func (s *sJsonParseSession) saveNode(nodeId int, node JSONObject) {
+func (s *sJsonParseSession) saveNode(nodeId int, node JSONObject) error {
 	if nr, ok := s.objectMap[nodeId]; ok {
 		if nr.node != nil {
-			panic(fmt.Sprintf("nodeId %d alreayd exists: %s != %s", nodeId, nr.node, node))
+			return errors.Wrapf(ErrDuplicateNodeId, "node id %d", nodeId)
 		} else {
 			nr.node = node
 		}
@@ -61,4 +78,5 @@ func (s *sJsonParseSession) saveNode(nodeId int, node JSONObject) {
 			pointers: nil,
 		}
 	}
+	return nil
 }

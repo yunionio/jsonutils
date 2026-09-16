@@ -62,11 +62,25 @@ func jsonUnmarshal(jo JSONObject, o interface{}, keys []string) error {
 			return errors.Wrap(err, "Get")
 		}
 	}
-	s := newJsonUnmarshalSession()
 	value := reflect.ValueOf(o)
-	err := jo.unmarshalValue(s, reflect.Indirect(value))
+	if value.IsValid() && value.Kind() == reflect.Ptr && value.IsNil() {
+		return errors.Wrapf(ErrTypeMismatch, "unmarshal into a nil pointer of type %s", value.Type())
+	}
+	target := reflect.Indirect(value)
+	// a non addressable value can not be written to, unless it is a
+	// non nil map, which is a reference type
+	if target.IsValid() && !target.CanAddr() &&
+		(target.Kind() != reflect.Map || target.IsNil()) {
+		return errors.Wrapf(ErrTypeMismatch, "unmarshal into a value of type %s, a pointer is required", target.Type())
+	}
+	s := newJsonUnmarshalSession()
+	err := jo.unmarshalValue(s, target)
 	if err != nil {
 		return errors.Wrap(err, "jo.unmarshalValue")
+	}
+	err = s.checkUnboundNodes()
+	if err != nil {
+		return errors.Wrap(err, "checkUnboundNodes")
 	}
 	return nil
 }
@@ -476,7 +490,10 @@ func (this *JSONArray) _unmarshalValue(s *sJsonUnmarshalSession, val reflect.Val
 
 func (this *JSONDict) unmarshalValue(s *sJsonUnmarshalSession, val reflect.Value) error {
 	if this.nodeId > 0 && val.CanAddr() {
-		s.saveNodeValue(this.nodeId, val.Addr())
+		err := s.saveNodeValue(this.nodeId, val.Addr())
+		if err != nil {
+			return errors.Wrap(err, "saveNodeValue")
+		}
 	}
 	return tryStdUnmarshal(s, this, val, this._unmarshalValue)
 }
@@ -510,7 +527,11 @@ func (this *JSONDict) _unmarshalValue(s *sJsonUnmarshalSession, val reflect.Valu
 				return err
 			}
 			if objPtr == nil {
-				val.Set(reflect.ValueOf(this.data)) // ???
+				dataVal := reflect.ValueOf(this.data)
+				if !dataVal.Type().AssignableTo(val.Type()) {
+					return errors.Wrapf(ErrInterfaceUnsupported, "JSONDict.unmarshalValue: %s", val.Type())
+				}
+				val.Set(dataVal)
 				return nil
 			}
 			err = this.unmarshalValue(s, reflect.ValueOf(objPtr))
