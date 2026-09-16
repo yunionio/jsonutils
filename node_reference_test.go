@@ -32,22 +32,40 @@ type nodeRefCycle struct {
 	Next *nodeRefCycle `json:"next,omitempty"`
 }
 
-func TestNodeReferenceNotResolved(t *testing.T) {
-	jo, err := ParseString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
+func TestNodeReferenceRejected(t *testing.T) {
+	// a bare <N> carries a node reference.  It is not resolved on the
+	// default entry point, and it is not kept as a plain value either: a
+	// caller could not tell it apart from a real string, and two fields
+	// must never end up pointing at one object.
+	for _, c := range []string{
+		`{"a":{"___jnid_":1,"b":5},"c":<1>}`,
+		`{"c":<1>}`,
+		`[<1>]`,
+		`{"c":<999>}`,
+	} {
+		if _, err := Parse([]byte(c)); err == nil {
+			t.Errorf("Parse(%q) expect an error", c)
+		}
+	}
+
+	// a quoted value is an ordinary string, and so is a token that is not
+	// a well formed reference
+	for _, c := range []string{
+		`{"c":"<1>"}`,
+		`{"c":<abc>}`,
+	} {
+		if _, err := Parse([]byte(c)); err != nil {
+			t.Errorf("Parse(%q): %v", c, err)
+		}
+	}
+}
+
+func TestNodeIdKeyIsOrdinary(t *testing.T) {
+	// without a reference the reserved key is an ordinary key
+	jo, err := ParseString(`{"a":{"___jnid_":1,"b":5}}`)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-
-	// <1> is kept as a plain value, it is not resolved to the node
-	c, err := jo.Get("c")
-	if err != nil {
-		t.Fatalf("get c: %v", err)
-	}
-	if str, err := c.GetString(); err != nil || str != "<1>" {
-		t.Errorf("c = %v, %v; want the string \"<1>\"", c, err)
-	}
-
-	// the reserved key stays an ordinary key of the nested object
 	a, err := jo.Get("a")
 	if err != nil {
 		t.Fatalf("get a: %v", err)
@@ -60,24 +78,9 @@ func TestNodeReferenceNotResolved(t *testing.T) {
 		t.Errorf("___jnid_ should be kept as an ordinary key, got %v", dict.SortedKeys())
 	}
 
-	// and the two fields must not end up pointing at the same object
-	var s nodeRefTwoFields
-	if err := jo.Unmarshal(&s); err == nil {
-		if s.A != nil && s.C != nil && s.A == s.C {
-			t.Errorf("the two fields must not point at the same object")
-		}
-	}
-}
-
-func TestNodeReferenceDoesNotAlias(t *testing.T) {
-	// a document can not make two fields share one object
-	jo, err := ParseString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
-	if err != nil {
-		t.Fatalf("parse: %v", err)
-	}
-	var s nodeRefTwoFields
-	if err := jo.Unmarshal(&s); err == nil && s.A != nil && s.A == s.C {
-		t.Errorf("unexpected alias: %+v", s)
+	// and no node id is assigned
+	if dict.nodeId != 0 {
+		t.Errorf("nodeId = %d, want 0", dict.nodeId)
 	}
 }
 

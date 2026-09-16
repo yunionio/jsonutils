@@ -249,6 +249,13 @@ func marshalTime(val time.Time, info *reflectutils.SStructFieldInfo, omitEmpty b
 	}
 }
 
+// Marshal converts an object to a JSONObject, which can be written out with
+// String.
+//
+// A cyclic object is written with the node reference syntax, that is the
+// ___jnid_ key inside an object plus a bare <N> value referring to it.  That
+// syntax is not standard json and its result is not a valid json document,
+// and Parse does not resolve it: read such a document back with ParseTrusted.
 func Marshal(obj interface{}) JSONObject {
 	if obj == nil {
 		return JSONNull
