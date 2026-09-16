@@ -594,14 +594,19 @@ func (this *JSONDict) prettyString(level int) string {
 		buffer.WriteByte('"')
 		buffer.WriteString(k)
 		buffer.WriteString("\":")
-		_, okdict := v.(*JSONDict)
-		_, okarray := v.(*JSONArray)
-		if okdict || okarray {
-			buffer.WriteByte('\n')
-			buffer.WriteString(v.prettyString(level + 2))
-		} else {
+		if gotypes.IsNil(v) {
 			buffer.WriteByte(' ')
-			buffer.WriteString(v.String())
+			buffer.WriteString("null")
+		} else {
+			_, okdict := v.(*JSONDict)
+			_, okarray := v.(*JSONArray)
+			if okdict || okarray {
+				buffer.WriteByte('\n')
+				buffer.WriteString(v.prettyString(level + 2))
+			} else {
+				buffer.WriteByte(' ')
+				buffer.WriteString(v.String())
+			}
 		}
 		idx++
 	}
@@ -639,7 +644,12 @@ func (this *JSONArray) prettyString(level int) string {
 			buffer.WriteString(",")
 		}
 		buffer.WriteByte('\n')
-		buffer.WriteString(v.prettyString(level + 1))
+		if gotypes.IsNil(v) {
+			buffer.WriteString(tab)
+			buffer.WriteString("  null")
+		} else {
+			buffer.WriteString(v.prettyString(level + 1))
+		}
 	}
 	if len(this.data) > 0 {
 		buffer.WriteByte('\n')
