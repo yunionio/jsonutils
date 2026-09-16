@@ -55,8 +55,8 @@ func TestParseInvalidNodeId(t *testing.T) {
 		`{"a":{"___jnid_":7},"b":{"___jnid_":7}}`,
 	}
 	for _, c := range cases {
-		if _, err := Parse([]byte(c)); err == nil {
-			t.Errorf("Parse(%q) expect an error", c)
+		if _, err := ParseTrusted([]byte(c)); err == nil {
+			t.Errorf("ParseTrusted(%q) expect an error", c)
 		}
 	}
 }

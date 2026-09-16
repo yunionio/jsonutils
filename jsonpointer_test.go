@@ -46,7 +46,7 @@ type pointerSameType struct {
 
 func TestJSONPointerTypeMismatch(t *testing.T) {
 	var out pointerNodeFirst
-	jo, err := ParseString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
+	jo, err := ParseTrustedString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
@@ -55,7 +55,7 @@ func TestJSONPointerTypeMismatch(t *testing.T) {
 	}
 
 	var out2 pointerRefFirst
-	jo, err = ParseString(`{"a":<1>,"b":{"___jnid_":1,"b":5}}`)
+	jo, err = ParseTrustedString(`{"a":<1>,"b":{"___jnid_":1,"b":5}}`)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
@@ -66,7 +66,7 @@ func TestJSONPointerTypeMismatch(t *testing.T) {
 
 func TestJSONPointerSameType(t *testing.T) {
 	var out pointerSameType
-	jo, err := ParseString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
+	jo, err := ParseTrustedString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}

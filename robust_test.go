@@ -70,7 +70,7 @@ func TestUnmarshalDanglingReference(t *testing.T) {
 		C *Inner `json:"c"`
 	}
 
-	jo, err := ParseString(`{"c":<999>}`)
+	jo, err := ParseTrustedString(`{"c":<999>}`)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestUnmarshalDanglingReference(t *testing.T) {
 	}
 
 	// a resolvable reference is unaffected
-	jo, err = ParseString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
+	jo, err = ParseTrustedString(`{"a":{"___jnid_":1,"b":5},"c":<1>}`)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
