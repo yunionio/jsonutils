@@ -17,6 +17,7 @@ package jsonutils
 import (
 	"bytes"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -431,6 +432,11 @@ func (s *sJsonParseSession) parseDict(str []byte, offset int) (sortedmap.SSorted
 	var e error = nil
 	var key string
 	var stop = false
+	// collect the keys first so that the sorted map can be built in key
+	// order: adding to a sorted map out of order shifts the whole tail
+	// on every insert
+	values := make(map[string]JSONObject)
+	keys := make([]string, 0)
 	for !stop && i < len(str) {
 		i = skipEmpty(str, i)
 		if i >= len(str) {
@@ -478,7 +484,10 @@ func (s *sJsonParseSession) parseDict(str []byte, offset int) (sortedmap.SSorted
 			// node id
 			nodeId = int(val.(*JSONInt).data)
 		} else {
-			smap = sortedmap.Add(smap, key, val)
+			if _, ok := values[key]; !ok {
+				keys = append(keys, key)
+			}
+			values[key] = val
 		}
 		i = skipEmpty(str, i)
 		if i >= len(str) {
@@ -493,6 +502,10 @@ func (s *sJsonParseSession) parseDict(str []byte, offset int) (sortedmap.SSorted
 		default:
 			return smap, i, nodeId, NewJSONError(str, i, "Unexpected char")
 		}
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		smap = sortedmap.Add(smap, key, values[key])
 	}
 	return smap, i, nodeId, nil
 }
