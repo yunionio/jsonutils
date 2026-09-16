@@ -654,8 +654,14 @@ func ParseString(str string) (JSONObject, error) {
 }
 
 func Parse(str []byte) (JSONObject, error) {
-	json, _, err := ParseStream(str, 0)
-	return json, err
+	json, offset, err := ParseStream(str, 0)
+	if err != nil {
+		return nil, err
+	}
+	if i := skipEmpty(str, offset); i < len(str) {
+		return nil, NewJSONError(str, i, "Unexpected content after the value")
+	}
+	return json, nil
 }
 
 func ParseStream(str []byte, offset int) (JSONObject, int, error) {
