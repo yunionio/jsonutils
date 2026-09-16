@@ -91,3 +91,45 @@ func TestMarshalNonFiniteFloat(t *testing.T) {
 		t.Errorf("c = %v, want -1.5", v["c"])
 	}
 }
+
+func TestUnmarshalNonFiniteIntoFloat(t *testing.T) {
+	type S struct {
+		F float64 `json:"f"`
+		G float32 `json:"g"`
+	}
+	cases := []string{
+		`{"f":NaN}`,
+		`{"f":"NaN"}`,
+		`{"f":Infinity}`,
+		`{"f":"Inf"}`,
+		`{"f":"-Infinity"}`,
+		`{"g":"NaN"}`,
+		`{"g":Infinity}`,
+	}
+	for _, c := range cases {
+		jo, err := ParseString(c)
+		if err != nil {
+			continue
+		}
+		var s S
+		if err := jo.Unmarshal(&s); err == nil {
+			if math.IsNaN(s.F) || math.IsInf(s.F, 0) ||
+				math.IsNaN(float64(s.G)) || math.IsInf(float64(s.G), 0) {
+				t.Errorf("Parse(%q): a non finite value reached a float field: %+v", c, s)
+			}
+		}
+	}
+
+	// a finite value is unaffected
+	var s S
+	jo, err := ParseString(`{"f":1.5,"g":-2.25}`)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	if err := jo.Unmarshal(&s); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if s.F != 1.5 || s.G != -2.25 {
+		t.Errorf("got %+v, want f=1.5 g=-2.25", s)
+	}
+}

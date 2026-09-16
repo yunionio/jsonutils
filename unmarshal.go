@@ -399,6 +399,11 @@ func (this *JSONString) _unmarshalValue(s *sJsonUnmarshalSession, val reflect.Va
 			if err != nil {
 				return err
 			}
+			if !isFiniteFloat(floatVal) {
+				// nan and +-inf have no json representation, they would
+				// silently break any comparison the field takes part in
+				return errors.Wrap(ErrInvalidJsonFloat, "not a finite number")
+			}
 			val.SetFloat(floatVal)
 		}
 	case reflect.Bool:
