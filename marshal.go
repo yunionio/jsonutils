@@ -128,7 +128,7 @@ func (s *sJsonMarshalSession) struct2JSONPairs(val reflect.Value, omitEmpty bool
 			continue
 		}
 		key := jsonInfo.MarshalName()
-		if deprecatedBy, ok := fields[i].Info.Tags[TAG_DEPRECATED_BY]; ok {
+		if deprecatedBy, ok := fields[i].Info.Tag(TAG_DEPRECATED_BY); ok {
 			depFields[key] = deprecatedBy
 			continue
 		}
